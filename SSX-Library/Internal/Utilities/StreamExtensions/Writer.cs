@@ -7,7 +7,7 @@ namespace SSX_Library.Internal.Utilities.StreamExtensions;
 /// Stream extensions for writing primitive types.
 /// </summary>
 /// <remarks>
-/// There is no need for sidgned WriteInt methods because it makes no difference at the binary level.
+/// There is no need for signed WriteInt methods because it makes no difference at the binary level.
 /// </remarks>
 internal static class Writer
 {

@@ -5,10 +5,9 @@ namespace SSX_Library.Internal.Utilities.StreamExtensions;
 /// </summary>
 internal static class Seeker
 {
-    //With how often align by 16 is used just better to have a quick function for it
-
     /// <summary>
     /// Advanced the stream position to the next multiple of 16.
+    /// With how often align by 16 is used, a quick function for it comes handy.
     /// </summary>
     /// <param name="alignment">How many bytes to align by</param>
     public static void AlignBy16(this Stream stream)

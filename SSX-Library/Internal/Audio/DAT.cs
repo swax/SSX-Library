@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace SSX_Library.Internal.Audio;
 
-public static partial  class DAT
+internal static class DAT
 {
     public static void Extract(string audioToolsFolder, string datPath, string outputFolder)
     {

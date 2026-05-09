@@ -81,6 +81,7 @@ internal static class ByteConv
     /// <summary>
     /// Searches for a byte pattern inside a stream.
     /// </summary>
+    /// <remarks> Advances the stream's position</remarks>
     /// <param name="searchLimit"> The max amount of bytes to check before 
     /// stopping. -1 if you want to search the whole stream. </param>
     /// <returns> The distance from the start of the stream to the first byte of the
