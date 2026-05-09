@@ -31,6 +31,7 @@ public sealed class SoundPacks : IDisposable
     private bool _disposed = false;
     private readonly string _sx_2002Path;
     private readonly string _sx_2004Path;
+    private readonly string _soundPacksFolder;
     private readonly string _headerFilePath;
     private readonly string _extractedHeaderFileFolder;
     private readonly BigType _headerBigType;
@@ -43,8 +44,8 @@ public sealed class SoundPacks : IDisposable
     public SoundPacks(string soundPacksFolder, string audioToolsFolder)
     {
         // Validate the tools
-        _sx_2002Path = Path.Combine(audioToolsFolder, "sx_2002.exe");
-        _sx_2004Path = Path.Combine(audioToolsFolder, "sx_2004.exe");
+        _sx_2002Path = Path.Join(audioToolsFolder, "sx_2002.exe");
+        _sx_2004Path = Path.Join(audioToolsFolder, "sx_2004.exe");
         if (!File.Exists(_sx_2002Path) || !File.Exists(_sx_2004Path))
         {
             throw new FileNotFoundException("Could not find required audio tools in the provided folder");
@@ -56,6 +57,7 @@ public sealed class SoundPacks : IDisposable
 
         // Validate the soundPacksFolder
         _headerFilePath = "";
+        _soundPacksFolder = soundPacksFolder;
         foreach (var file in Directory.GetFiles(soundPacksFolder))
         {
             // Find the header file
@@ -78,12 +80,28 @@ public sealed class SoundPacks : IDisposable
     }
 
     /// <summary>
-    /// Gets the list of packs only if there is a corresponding .dat file to the .hdr
+    /// Gets two lists of packs based on if there is a corresponding .dat file to the .hdr
     /// </summary>
-    /// <returns>A list of sound pack names</returns>
-    public string[] GetValidSoundPacks()
+    /// <returns>A tuple with valid and invalid lists of sound pack names.
+    /// The names are paths relative to the SoundPacks but without
+    /// the extension. e.g. "/char/talk", that way its can be used for searching for both the hdr and dat.</returns>
+    public (string[] valid, string[] invalid) GetSoundPacks()
     {
-        return ["sus"];
+        // Iterate through all the paths in the extracted headers and get all the .hdr files
+        var headerPaths = 
+            Directory.EnumerateFiles(_extractedHeaderFileFolder, "*.hdr", SearchOption.AllDirectories)
+            .Select(p => Path.GetRelativePath(_extractedHeaderFileFolder, p)) // Remove the folder path
+            .Select(p => Path.ChangeExtension(p, null)); // Remove the extension
+        
+        // Then check if there is a .dat file with the same relative path to the soundpacks folder.
+        var dataPaths =
+            Directory.EnumerateFiles(_headerFilePath, "*.dat", SearchOption.AllDirectories)
+            .Select(p => Path.GetRelativePath(_headerFilePath, p)) // Remove the folder path
+            .Select(p => Path.ChangeExtension(p, null)); // Remove the extension
+
+        // If a .dat exists for an .hdr then it's valid, If not then its invalid.
+        var soundPacks = headerPaths.ToLookup(p => dataPaths.Contains(p));
+        return ([..soundPacks[true]], [..soundPacks[false]]);
     }
 
     public int GetSoundPackSoundCount(string soundPackName)
