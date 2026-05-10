@@ -127,7 +127,7 @@ public sealed class SoundPacks : IDisposable
         {
             throw new ValueOutOfRangeException("Sound ID is out of range");
         }
-        return hdr.fileHeaders[soundID].EventID;
+        return hdr.FileHeaders[soundID].EventID;
     }
 
     /// <summary>
@@ -154,17 +154,67 @@ public sealed class SoundPacks : IDisposable
         {
             throw new ValueOutOfRangeException("Speaker ID is out of range");
         }
-        return hdr.fileHeaders[soundID].SpeakerID;
+        return hdr.FileHeaders[soundID].SpeakerID;
     }
 
-    public void SetSoundPackEventID(string soundPackName, int soundID, byte eventID)
+    /// <summary>
+    /// Set the EventID of a sound.
+    /// </summary>
+    /// <param name="soundPackName"> A valid sound pack name, obtainable through GetSoundPacks() </param>
+    /// <param name="soundID"> A sound ID. It must be lower than the amount of sounds in a sound pack. </param>
+    public void SetSoundPackEventID(string soundPackName, int soundID, byte newEventID)
     {
+        // Load the .hdr
+        var hdrPath = Path.Join(_extractedHeaderFileFolder, soundPackName + ".hdr");
+        if (!File.Exists(hdrPath))
+        {
+            throw new FileNotFoundException("Could not find header file: " + hdrPath);
+        }
 
+        // Update the EventID and save back to disk
+        var hdr = new HDR();
+        hdr.Load(hdrPath);
+        if (hdr.EntryTypes is 0 or 1){
+            throw new InvalidOperationException($"{hdrPath}'s entry type does not contain Event IDs ");
+        }
+        if (soundID >= hdr.FileCount)
+        {
+            throw new ValueOutOfRangeException("Event ID is out of range");
+        }
+        var newHeader = hdr.FileHeaders[soundID];
+        newHeader.EventID = newEventID;
+        hdr.FileHeaders[soundID] = newHeader;
+        hdr.Save(hdrPath);
     }
 
-    public void SetSoundPackSpeakerID(string soundPackName, int soundID, byte speakerID)
+    /// <summary>
+    /// Set the SpeakerID of a sound.
+    /// </summary>
+    /// <param name="soundPackName"> A valid sound pack name, obtainable through GetSoundPacks() </param>
+    /// <param name="soundID"> A sound ID. It must be lower than the amount of sounds in a sound pack. </param>
+    public void SetSoundPackSpeakerID(string soundPackName, int soundID, byte newSpeakerID)
     {
+        // Load the .hdr
+        var hdrPath = Path.Join(_extractedHeaderFileFolder, soundPackName + ".hdr");
+        if (!File.Exists(hdrPath))
+        {
+            throw new FileNotFoundException("Could not find header file: " + hdrPath);
+        }
 
+        // Update the SpeakerID and save back to disk
+        var hdr = new HDR();
+        hdr.Load(hdrPath);
+        if (hdr.EntryTypes is 0 or 1){
+            throw new InvalidOperationException($"{hdrPath}'s entry type does not contain Speaker IDs ");
+        }
+        if (soundID >= hdr.FileCount)
+        {
+            throw new ValueOutOfRangeException("Speaker ID is out of range");
+        }
+        var newHeader = hdr.FileHeaders[soundID];
+        newHeader.SpeakerID = newSpeakerID;
+        hdr.FileHeaders[soundID] = newHeader;
+        hdr.Save(hdrPath);
     }
 
     // Make sure the extracted wav file is named after it's pack name and sound ID

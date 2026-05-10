@@ -13,7 +13,7 @@ internal sealed class HDR
     public byte AligmentSize;
     public short Unknown3; // U5
     public int GapSize;
-    public List<FileHeader> fileHeaders = [];
+    public List<FileHeader> FileHeaders = [];
     public byte[] Padding = [];
 
     public void Load(string path)
@@ -35,10 +35,10 @@ internal sealed class HDR
             _ => 0,
         };
 
-        fileHeaders = [];
+        FileHeaders = [];
         for (int _ = 0; _ < FileCount; _++)
         {
-            fileHeaders.Add(
+            FileHeaders.Add(
                 EntryTypes switch
                 {
                     0 => new()
@@ -94,7 +94,7 @@ internal sealed class HDR
         stream.WriteUInt16((ushort)Unknown1, ByteOrder.LittleEndian);
         stream.WriteUInt16((ushort)Unknown2, ByteOrder.LittleEndian);
         stream.WriteByte((byte)EntryTypes);
-        stream.WriteByte((byte)fileHeaders.Count);
+        stream.WriteByte((byte)FileHeaders.Count);
         stream.WriteByte((byte)Padding.Length);
         stream.WriteByte(AligmentSize);
         stream.WriteUInt16((ushort)Unknown3, ByteOrder.LittleEndian);
@@ -106,9 +106,9 @@ internal sealed class HDR
             _ => 0,
         };
 
-        for (int i = 0; i < fileHeaders.Count; i++)
+        for (int i = 0; i < FileHeaders.Count; i++)
         {
-            var header = fileHeaders[i];
+            var header = FileHeaders[i];
             switch (EntryTypes) {
             case 0:
                 stream.WriteUInt16((ushort)header.OffsetInt, ByteOrder.BigEndian);
@@ -138,7 +138,6 @@ internal sealed class HDR
     public struct FileHeader
     {
         public byte Unknown1;
-        public byte[] Offset;
         public byte SpeakerID;
         public byte EventID;
         public int OffsetInt;
