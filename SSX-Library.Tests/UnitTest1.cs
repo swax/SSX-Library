@@ -18,11 +18,11 @@ public class UnitTest1
         // string output = "/home/eric/Downloads/ass";
         // BIG.Extract(input, output);
 
-        string input = "/home/eric/Downloads/sus/data/speech/char/01a1.dat";
-        string output = "/home/eric/Downloads/ass";
-        string tools = "/home/eric/Downloads";
+        // string input = "/home/eric/Downloads/sus/data/speech/char/01a1.dat";
+        // string output = "/home/eric/Downloads/ass";
+        // string tools = "/home/eric/Downloads";
         // BIG.Extract(input, output);
-        Internal.Audio.DAT.Extract(tools, input, output);
+        // Internal.Audio.DAT.Extract(tools, input, output);
 
 
 

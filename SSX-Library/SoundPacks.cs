@@ -1,19 +1,7 @@
-using SSX_Library.Internal.Utilities;
-
+using ICSharpCode.SharpZipLib;
+using SSX_Library.Internal.Audio;
 
 namespace SSX_Library;
-
-/*
-    For now:
-    I'll not add a feature to add individual sounds, You have to extract the whole sound pack,
-    replace the one you want to change, and then rebuild again.
-
-    Warning:
-    A folder containing.dat files was found right next to a headers.big. This is in ssx Tricky's 
-    data/speech/anim
-    The headers.big also replicate the fact that the .dat is in a folder by the same name, interesting. I think this is because without archiving, the hdr files are meant to be right next to the dat files
-
-*/
 
 /// <summary>
 /// Represents a folder containing sound packs, where each pack holds sounds.
@@ -97,24 +85,76 @@ public sealed class SoundPacks : IDisposable
     }
 
     /// <summary>
+    /// Get the number of sounds in a sound pack.
     /// </summary>
     /// <param name="soundPackName"> A valid sound pack name, obtainable through GetSoundPacks() </param>
-    /// <returns></returns>
     public int GetSoundPackSoundCount(string soundPackName)
     {
-        // Todo next. I must refactor HDR again if need be.
+        // Load the .hdr
+        var hdrPath = Path.Join(_extractedHeaderFileFolder, soundPackName + ".hdr");
+        if (!File.Exists(hdrPath))
+        {
+            throw new FileNotFoundException("Could not find header file: " + hdrPath);
+        }
 
-        return 0;
+        // Read and return the File count
+        var hdr = new HDR();
+        hdr.Load(hdrPath);
+        return hdr.FileCount;
     }
 
+    /// <summary>
+    /// Get the EventID of a sound.
+    /// </summary>
+    /// <param name="soundPackName"> A valid sound pack name, obtainable through GetSoundPacks() </param>
+    /// <param name="soundID"> A sound ID. It must be lower than the amount of sounds in a sound pack. </param>
     public byte GetSoundPackEventID(string soundPackName, int soundID)
     {
-        return 0;
+        // Load the .hdr
+        var hdrPath = Path.Join(_extractedHeaderFileFolder, soundPackName + ".hdr");
+        if (!File.Exists(hdrPath))
+        {
+            throw new FileNotFoundException("Could not find header file: " + hdrPath);
+        }
+
+        // Read and return the sound event ID
+        var hdr = new HDR();
+        hdr.Load(hdrPath);
+        if (hdr.EntryTypes is 0 or 1){
+            throw new InvalidOperationException($"{hdrPath}'s entry type does not contain Event IDs ");
+        }
+        if (soundID >= hdr.FileCount)
+        {
+            throw new ValueOutOfRangeException("Sound ID is out of range");
+        }
+        return hdr.fileHeaders[soundID].EventID;
     }
 
+    /// <summary>
+    /// Get the SpeakerID of a sound.
+    /// </summary>
+    /// <param name="soundPackName"> A valid sound pack name, obtainable through GetSoundPacks() </param>
+    /// <param name="soundID"> A sound ID. It must be lower than the amount of sounds in a sound pack. </param>
     public byte GetSoundPackSpeakerID(string soundPackName, int soundID)
     {
-        return 0;
+        // Load the .hdr
+        var hdrPath = Path.Join(_extractedHeaderFileFolder, soundPackName + ".hdr");
+        if (!File.Exists(hdrPath))
+        {
+            throw new FileNotFoundException("Could not find header file: " + hdrPath);
+        }
+
+        // Read and return the sound speaker ID
+        var hdr = new HDR();
+        hdr.Load(hdrPath);
+        if (hdr.EntryTypes is 0 or 1){
+            throw new InvalidOperationException($"{hdrPath}'s entry type does not contain Speaker IDs ");
+        }
+        if (soundID >= hdr.FileCount)
+        {
+            throw new ValueOutOfRangeException("Speaker ID is out of range");
+        }
+        return hdr.fileHeaders[soundID].SpeakerID;
     }
 
     public void SetSoundPackEventID(string soundPackName, int soundID, byte eventID)
@@ -137,6 +177,10 @@ public sealed class SoundPacks : IDisposable
     /// Note: Order of the wavFilePaths array matter.
     /// Length of the array must match the number of sounds in the pack.
     /// </summary>
+    /// <remarks>
+    /// Adding individual sounds is not supported, You have to extract the whole sound pack,
+    /// replace the sounds you want to change, and then rebuild again.
+    /// </remarks>
     public void ReplaceSoundPackWithWavFolder(string soundPackName, string[] wavFilePaths)
     {
         
