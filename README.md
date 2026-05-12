@@ -166,6 +166,8 @@ Utilities:
 - [ ] ImageUtil.cs
 - [ ] StreamUtil.cs
 
+Some EA tools are required to use some features. Here is a mirror of the essentials: [SSX-External-Tools](https://github.com/Erickson400/SSX-External-Tools)
+
 ## Special Thanks
 https://github.com/Erickson400/SSXTrickyModelExporter <br>
 https://github.com/WouterBaeyens/Ssx3SshConverter <br>
