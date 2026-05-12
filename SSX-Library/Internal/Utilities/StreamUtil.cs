@@ -523,6 +523,7 @@ namespace SSX_Library.Internal.Utilities
             StreamUtil.WriteFloat32(stream, matrix4X4.M44, BigEndian);
         }
 
+        [Obsolete("Use Stream.Copy instead.")]
         public static void WriteStreamIntoStream(Stream MainStream, Stream Input, long StartPos = -1, long Length = -1)
         {
             if(Length == -1)

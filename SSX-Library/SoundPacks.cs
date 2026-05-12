@@ -1,5 +1,6 @@
 using SSX_Library.Internal.Audio;
 using SSX_Library.Internal.Utilities;
+using SSX_Library.Internal.Utilities.StreamExtensions;
 using System.Diagnostics;
 
 namespace SSX_Library;
@@ -265,7 +266,7 @@ public sealed class SoundPacks : IDisposable
                 using var tempMusFile = File.OpenWrite(tempMusFilePath);
                 datFile.CopyTo(tempMusFile, (int)musFileSize);
 
-                // Take the mus file as input, and output the sound to the extraction folder as .wav.
+                // Turn the .mus file to .wav, and place it on the extraction folder.
                 var cmd = new Process();
                 cmd.StartInfo.FileName = OperatingSystem.IsLinux() ? "/bin/bash" : "cmd.exe";
                 cmd.StartInfo.RedirectStandardInput = true;
@@ -273,7 +274,7 @@ public sealed class SoundPacks : IDisposable
                 cmd.StartInfo.CreateNoWindow = true;
                 cmd.Start();
                 var wine = OperatingSystem.IsLinux() ? "WINEDEBUG=-all wine " : "";
-                var outputPath = Path.Join(folderToExtractTo, soundPackName + $"_{i:000}" + ".wav");
+                var outputPath = Path.Join(folderToExtractTo, Path.GetFileName(soundPackName) + $"_{i:000}" + ".wav");
                 cmd.StandardInput.WriteLine($"{wine}{_sx_2002Path} -wave -s16l_int -playlocmaincpu  {tempMusFilePath} -={outputPath}");
                 cmd.StandardInput.Flush();
                 cmd.StandardInput.Close();
@@ -287,16 +288,87 @@ public sealed class SoundPacks : IDisposable
     }
 
     /// <summary>
-    /// Note: Order of the wavFilePaths array matter.
-    /// Length of the array must match the number of sounds in the pack.
+    /// Updates a sound pack with .wav sounds from a list of .wav files.
     /// </summary>
     /// <remarks>
+    /// The order of the wavFilePaths items matter.<br></br>
+    /// Length of the array must match the number of sounds in the pack.<br></br>
     /// Adding individual sounds is not supported, You have to extract the whole sound pack,
     /// replace the sounds you want to change, and then rebuild again.
     /// </remarks>
-    public void ReplaceSoundPackWithWavFolder(string soundPackName, string[] wavFilePaths)
+    public void ReplaceSoundPackWithWavFiles(string soundPackName, string[] wavFilePaths, bool useSsx3Flag = false)
     {
-        // Todo Next
+        // Load the .hdr
+        var hdrPath = Path.Join(_extractedHeaderFileFolder, soundPackName + ".hdr");
+        if (!File.Exists(hdrPath))
+        {
+            throw new FileNotFoundException("Could not find header file: " + hdrPath);
+        }
+        var hdr = new HDR();
+        hdr.Load(hdrPath);
+        if (hdr.FileCount != wavFilePaths.Length)
+        {
+            throw new IndexOutOfRangeException("wavFilePaths length does not match the sound count.");
+        }
+        
+        var musFilePaths = new List<string>();
+        try
+        {
+            // Turn the .wav's to .mus's and store their paths in musFilePaths.
+            foreach (var wavPath in wavFilePaths)
+            {
+                var tempMusFilePath = Path.GetTempFileName();
+                musFilePaths.Add(tempMusFilePath);
+                var cmd = new Process();
+                cmd.StartInfo.FileName = OperatingSystem.IsLinux() ? "/bin/bash" : "cmd.exe";
+                cmd.StartInfo.RedirectStandardInput = true;
+                cmd.StartInfo.RedirectStandardOutput = true;
+                cmd.StartInfo.CreateNoWindow = true;
+                cmd.Start();
+                var wine = OperatingSystem.IsLinux() ? "WINEDEBUG=-all wine " : "";
+                var sxFlag = useSsx3Flag ? "-eaxa_blk" : "-mt_blk";
+                cmd.StandardInput.WriteLine($"{wine}{_sx_2002Path} -ps2stream {sxFlag} -playlocmaincpu -removeuserall {wavPath} -={tempMusFilePath} -v3");
+                cmd.StandardInput.Flush();
+                cmd.StandardInput.Close();
+                cmd.WaitForExit();
+            }
+
+            // Update the .hdr to the new offsets.
+            long currentOffset = 0;
+            for (int i = 0; i < musFilePaths.Count; i++)
+            {
+                // Get the size of the .mus while aligned.
+                using var musFile = File.OpenRead(musFilePaths[i]);
+                musFile.Seek(0, SeekOrigin.End);
+                musFile.AlignBy(0x100 * (hdr.AligmentSize + 1));
+
+                // Update the header's offset
+                var header = hdr.FileHeaders[i];
+                header.Offset = (int)currentOffset / (0x100 * hdr.AligmentSize + 1);
+                hdr.FileHeaders[i] = header;
+
+                // Advance offset by the size
+                currentOffset += musFile.Length;
+            }
+
+            // Update the .dat.
+            using var datFile = File.Create(Path.Join(_soundPacksFolder, soundPackName + ".dat"));
+            for (int i = 0; i < musFilePaths.Count; i++)
+            {
+                // Copy the whole .mus into the .dat with the corresponding alignment. 
+                using var musFile = File.OpenRead(musFilePaths[i]);
+                datFile.Position = hdr.FileHeaders[i].Offset * 0x100 / (hdr.AligmentSize + 1);
+                musFile.CopyTo(datFile);
+            }
+        }
+        finally
+        {
+            foreach (var path in musFilePaths)
+            {
+                File.Delete(path);
+            }
+        }
+        hdr.Save(hdrPath);
     }
 
     public void Dispose()

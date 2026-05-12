@@ -43,29 +43,29 @@ internal sealed class HDR
                 {
                     0 => new()
                     {
-                        OffsetInt = stream.ReadInt16(ByteOrder.BigEndian),
+                        Offset = stream.ReadInt16(ByteOrder.BigEndian),
                     },
                     1 => new()
                     {
-                        Unknown1 = (byte)stream.ReadByte(),
-                        OffsetInt = stream.ReadInt16(ByteOrder.BigEndian),
+                        Unknown = (byte)stream.ReadByte(),
+                        Offset = stream.ReadInt16(ByteOrder.BigEndian),
                     },
                     2 => new()
                     {
-                        OffsetInt = stream.ReadInt16(ByteOrder.BigEndian),
+                        Offset = stream.ReadInt16(ByteOrder.BigEndian),
                         SpeakerID = (byte)stream.ReadByte(),
                         EventID = (byte)stream.ReadByte(),
                     },
                     3 => new()
                     {
-                        OffsetInt = (int)stream.ReadUInt24(ByteOrder.BigEndian),
+                        Offset = (int)stream.ReadUInt24(ByteOrder.BigEndian),
                         SpeakerID = (byte)stream.ReadByte(),
                         EventID = (byte)stream.ReadByte(),
                     },
                     4 => new()
                     {
-                        Unknown1 = (byte)stream.ReadByte(),
-                        OffsetInt = (int)stream.ReadUInt24(ByteOrder.BigEndian),
+                        Unknown = (byte)stream.ReadByte(),
+                        Offset = (int)stream.ReadUInt24(ByteOrder.BigEndian),
                         SpeakerID = (byte)stream.ReadByte(),
                         EventID = (byte)stream.ReadByte(),
                     },
@@ -111,20 +111,20 @@ internal sealed class HDR
             var header = FileHeaders[i];
             switch (EntryTypes) {
             case 0:
-                stream.WriteUInt16((ushort)header.OffsetInt, ByteOrder.BigEndian);
+                stream.WriteUInt16((ushort)header.Offset, ByteOrder.BigEndian);
                 break;
             case 1 or 2:
-                stream.WriteByte(header.Unknown1);
-                stream.WriteUInt16((ushort)header.OffsetInt, ByteOrder.BigEndian);
+                stream.WriteByte(header.Unknown);
+                stream.WriteUInt16((ushort)header.Offset, ByteOrder.BigEndian);
                 break;
             case 3:
-                stream.WriteUInt24((uint)header.OffsetInt, ByteOrder.BigEndian);
+                stream.WriteUInt24((uint)header.Offset, ByteOrder.BigEndian);
                 stream.WriteByte(header.SpeakerID);
                 stream.WriteByte(header.EventID);
                 break;
             case 4:
-                stream.WriteByte(header.Unknown1);
-                stream.WriteUInt24((uint)header.OffsetInt, ByteOrder.BigEndian);
+                stream.WriteByte(header.Unknown);
+                stream.WriteUInt24((uint)header.Offset, ByteOrder.BigEndian);
                 stream.WriteByte(header.SpeakerID);
                 stream.WriteByte(header.EventID);
                 break;
@@ -137,9 +137,9 @@ internal sealed class HDR
 
     public struct FileHeader
     {
-        public byte Unknown1;
+        public byte Unknown;
         public byte SpeakerID;
         public byte EventID;
-        public int OffsetInt;
+        public int Offset;
     }
 }
