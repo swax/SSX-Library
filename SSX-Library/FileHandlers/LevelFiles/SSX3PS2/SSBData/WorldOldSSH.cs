@@ -161,7 +161,7 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData
                         {
                             A = 0;
                         }
-                        TempColour = new Rgba32(A, TempColour.R, TempColour.G, TempColour.B);
+                        TempColour = new Rgba32(TempColour.R, TempColour.G, TempColour.B, A);
                         sshTable.colorsTable[a] = TempColour;
                     }
                 }
@@ -184,7 +184,7 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData
                     int R = tempColor.R;
                     int G = tempColor.G;
                     int B = tempColor.B;
-                    sshTable.colorsTable[c] = new Rgba32(A, R, G, B);
+                    sshTable.colorsTable[c] = new Rgba32(R, G, B, A);
                 }
             }
             else
@@ -225,10 +225,10 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData
                         for (int x = 0; x < Width; x++)
                         {
                             int colorPos = Matrix[post];
-                            if (sshTable.Format != 0)
-                            {
-                                colorPos = ByteUtil.ByteBitSwitch(colorPos);
-                            }
+                            //if (sshTable.Format != 0)
+                            //{
+                            //    colorPos = ByteUtil.ByteBitSwitch(colorPos);
+                            //}
 
                             if (MetalBin)
                             {
@@ -257,10 +257,10 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData
                                 post++;
                                 int A = Matrix[post];
                                 post++;
-                                //bitmap.SetPixel(x, y, Color.FromArgb(A, R, G, B));
-                                if (!colourTable.colorsTable.Contains(new Rgba32(A, R, G, B)))
+                                Image[x, y] = new Rgba32(R, G, B, A);
+                                if (!colourTable.colorsTable.Contains(new Rgba32(R, G, B, A)))
                                 {
-                                    colourTable.colorsTable.Add(new Rgba32(A, R, G, B));
+                                    colourTable.colorsTable.Add(new Rgba32(R, G, B, A));
                                 }
                             }
                         }

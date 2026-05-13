@@ -140,7 +140,7 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData
                     int G = Matrix[i * 4+1];
                     int B = Matrix[i * 4+2];
                     int A = Matrix[i * 4+3];
-                    sshTable.colorTable.Add(new Rgba32(A, R, G, B));
+                    sshTable.colorTable.Add(new Rgba32(R, G, B, A));
                 }
 
                 //for (int a = 0; a < tempSize; a++)
@@ -173,7 +173,7 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData
                         {
                             A = 0;
                         }
-                        TempColour = new Rgba32(A, TempColour.R, TempColour.G, TempColour.B);
+                        TempColour = new Rgba32(TempColour.R, TempColour.G, TempColour.B, A);
                         sshTable.colorTable[a] = TempColour;
                     }
                 }
@@ -267,9 +267,9 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData
                         int A = Matrix[post];
                         post++;
                         bitmap[x, y] = new Rgba32(A, R, G, B);
-                        if (!colourTable.colorTable.Contains(new Rgba32(A, R, G, B)))
+                        if (!colourTable.colorTable.Contains(new Rgba32(R, G, B, A)))
                         {
-                            colourTable.colorTable.Add(new Rgba32(A, R, G, B));
+                            colourTable.colorTable.Add(new Rgba32(R, G, B, A));
                         }
                     }
                 }
