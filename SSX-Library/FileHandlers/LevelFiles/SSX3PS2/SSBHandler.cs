@@ -233,7 +233,7 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2
                                     Console.WriteLine(extractPath + "//Textures//" + Path + ".png");
                                     WorldSSH worldOldSSH = new WorldSSH();
 
-                                    worldOldSSH.Load(NewData);
+                                    worldOldSSH.Load(memoryStream1);
 
                                     worldOldSSH.SaveImage(extractPath + "//Textures//" + RID + ".png");
                                 }
@@ -242,9 +242,9 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2
                             else if (ID == 10)
                             {
                                 Console.WriteLine(extractPath + "//Lightmaps//" + Path + ".png");
-                                WorldOldSSH worldOldSSH = new WorldOldSSH();
+                                WorldSSH worldOldSSH = new WorldSSH();
 
-                                worldOldSSH.Load(NewData);
+                                worldOldSSH.Load(memoryStream1);
                                 //worldOldSSH.SaveImage(ExtractPath + "//Lightmaps//" + Path + ".png");
 
                                 if (!File.Exists(extractPath + "//Lightmaps//" + RID.ToString().PadLeft(4, '0') + ".png"))
@@ -307,15 +307,15 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2
                                 memoryStream1 = new MemoryStream();
                                 file.Close();
                             }
-                            //else
-                            //{
-                            //    Console.WriteLine(LevelExtractPath + Path + ".bin" + ID);
-                            //    var file = File.Create(LevelExtractPath + Path + ".bin" + ID);
-                            //    memoryStream1.CopyTo(file);
-                            //    memoryStream1.Dispose();
-                            //    memoryStream1 = new MemoryStream();
-                            //    file.Close();
-                            //}
+                            else
+                            {
+                                Console.WriteLine(LevelExtractPath + Path + ".bin" + ID);
+                                var file = File.Create(LevelExtractPath + Path + ".bin" + ID);
+                                memoryStream1.CopyTo(file);
+                                memoryStream1.Dispose();
+                                memoryStream1 = new MemoryStream();
+                                file.Close();
+                            }
 
                             FilePos++;
                         }
