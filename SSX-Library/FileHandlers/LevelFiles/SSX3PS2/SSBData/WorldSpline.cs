@@ -63,6 +63,8 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData
         {
             SplineJsonHandler.SplineJson splineJson = new SplineJsonHandler.SplineJson();
 
+            splineJson.Name = Name;
+
             splineJson.U0 = U0;
             splineJson.U1 = U1;
             splineJson.U2 = U2;

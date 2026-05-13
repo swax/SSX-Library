@@ -126,6 +126,8 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData
         {
             PatchesJsonHandler.PatchJson patchJson = new PatchesJsonHandler.PatchJson();
 
+            patchJson.Name = Name;
+
             patchJson.U1 = U1;
             patchJson.U2 = U2;
             patchJson.U3 = U3;
