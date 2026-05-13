@@ -1,4 +1,5 @@
 ﻿using SSX_Library.Internal.Utilities;
+using SSX_Library.Internal.Utilities.StreamExtensions;
 using System.IO;
 
 namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2
@@ -29,14 +30,8 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2
                     for (int a = 0; a < TempNameList.NumStrings; a++)
                     {
                         TempNameList.strings.Add(StreamUtil.ReadNullEndString(stream));
-                        stream.Position++; //Put here to fix bug with Read Null End String
                     }
-                    stream.Position++;
-                    if(test)
-                    {
-                        stream.Position++;
-                    }
-                    test = !test;
+                    stream.AlignBy(4);
                     nameLists.Add(TempNameList);
                 }
             }
