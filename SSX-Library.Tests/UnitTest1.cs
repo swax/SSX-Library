@@ -9,21 +9,28 @@ public class UnitTest1
 {
     [Fact]
     public void Test1()
-    {        
-        // string input = "/home/eric/Downloads/speech.big";
-        // string output = "/home/eric/Downloads/sus";
-        // BIG.Extract(input, output);
+    {
+        // Tricky
+        string tools = "/home/eric/Downloads/audio_tools";
+        string speech = "/home/eric/Downloads/tricky_extract/data/speech/";
+        string animPath = speech + "anim";
+        string charPath = speech + "char";
+        string fePath = speech + "fe";
+        string mcPath = speech + "mc";
+        string narrPath = speech + "narr";
+        string output = "/home/eric/Downloads/output";
 
-        // string input = "/home/eric/Downloads/sus/data/speech/anim/headers.big";
-        // string output = "/home/eric/Downloads/ass";
-        // BIG.Extract(input, output);
+        // using var soundPacks = new SoundPacks(animPath, tools);
+        using var soundPacks = new SoundPacks(charPath, tools);
 
-        // string input = "/home/eric/Downloads/sus/data/speech/char/01a1.dat";
-        // string output = "/home/eric/Downloads/ass";
-        // string tools = "/home/eric/Downloads";
-        // BIG.Extract(input, output);
-        // Internal.Audio.DAT.Extract(tools, input, output);
 
+
+        // string input = "/home/eric/Downloads/3_english.big";
+        // string output = "/home/eric/Downloads/english_extract";
+        // BIG.Extract(input, output);
+        // input = "/home/eric/Downloads/tricky_speech.big";
+        // output = "/home/eric/Downloads/tricky_extract";
+        // BIG.Extract(input, output);
 
     }
 }

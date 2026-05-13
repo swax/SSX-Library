@@ -29,6 +29,8 @@ public sealed class SoundPacks : IDisposable
     /// <summary>
     /// Create a SoundsPacks folder handler.
     /// </summary>
+    /// <remarks>This class's objects must be disposed of after
+    /// opening - to commit changes to the filesystem.</remarks>
     /// <param name="audioToolsFolder"> The path to the proprietary EA audio tools, 
     /// used for sound extraction/generation.</param>
     public SoundPacks(string soundPacksFolder, string audioToolsFolder)
@@ -48,7 +50,7 @@ public sealed class SoundPacks : IDisposable
         // Validate the soundPacksFolder
         _soundPacksFolder = soundPacksFolder;
         _headerFilePath =
-            Directory.EnumerateFiles(soundPacksFolder, "*header*.big", SearchOption.AllDirectories)
+            Directory.EnumerateFiles(soundPacksFolder, "*head*.big", SearchOption.AllDirectories)
             .FirstOrDefault("");
         if (_headerFilePath == "")
         {
@@ -296,7 +298,7 @@ public sealed class SoundPacks : IDisposable
     /// Adding individual sounds is not supported, You have to extract the whole sound pack,
     /// replace the sounds you want to change, and then rebuild again.
     /// </remarks>
-    public void ReplaceSoundPackWithWavFiles(string soundPackName, string[] wavFilePaths, bool useSsx3Flag = false)
+    public void WavFilesToSoundPack(string soundPackName, string[] wavFilePaths, bool useSsx3Flag = false)
     {
         // Load the .hdr
         var hdrPath = Path.Join(_extractedHeaderFileFolder, soundPackName + ".hdr");
@@ -376,7 +378,7 @@ public sealed class SoundPacks : IDisposable
         if (_disposed) return;
 
         // Archive the temp folder back to its .big path. And delete the temp folder.
-        BIG.Create(_headerBigType, _extractedHeaderFileFolder, _headerFilePath, true);
+        BIG.Create(_headerBigType, _extractedHeaderFileFolder, _headerFilePath, false);
         Directory.Delete(_extractedHeaderFileFolder, true);
 
         _disposed = true;

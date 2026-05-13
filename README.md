@@ -6,8 +6,8 @@ The library serves as a framework for GUI/CLI modding tools, but it can also be 
 The library was made to isolate the backend from the Windows only [SSX Collection Multitool](https://github.com/GlitcherOG/SSX-Collection-Multitool). Currently we're refactoring every part of the library to make it maintainable and cross-platform. We have a general checklist of the things we need to do, though many will be combined or removed. 
 ## Refactor Checklist
 - [x] BigHandler.cs
-- [ ] DATAudio.cs
-- [ ] HDRHandler.cs
+- [x] DATAudio.cs
+- [x] HDRHandler.cs
 - [x] LOCHandler.cs
 - [x] NewBigHandler.cs
 - [x] RefpackHandler.cs
@@ -166,7 +166,7 @@ Utilities:
 - [ ] ImageUtil.cs
 - [ ] StreamUtil.cs
 
-Some EA tools are required to use some features. Here is a mirror of the essentials: [SSX-External-Tools](https://github.com/Erickson400/SSX-External-Tools)
+Some EA tools are required to use some features. Here is a mirror of the essentials: [SSX-External-Tools](https://github.com/Erickson400/SSX-External-Tools). If on linux you also need wine to run them.
 
 ## Special Thanks
 https://github.com/Erickson400/SSXTrickyModelExporter <br>
