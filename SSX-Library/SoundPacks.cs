@@ -1,6 +1,7 @@
 using SSX_Library.Internal.Audio;
 using SSX_Library.Internal.Utilities;
 using SSX_Library.Internal.Utilities.StreamExtensions;
+using SSXLibrary.FileHandlers;
 using System.Diagnostics;
 
 namespace SSX_Library;
@@ -64,28 +65,38 @@ public sealed class SoundPacks : IDisposable
     }
 
     /// <summary>
-    /// Gets two lists of packs based on if there is a corresponding .dat file to the .hdr
+    /// Gets a list of valid and invalid sound pack names based on if there is a corresponding .dat file to the .hdr
     /// </summary>
-    /// <returns>A tuple with lists of valid and invalid sound pack names.
-    /// The names are paths relative to the SoundPacks but without
-    /// the extension. e.g. "/char/talk", that way its can be used for searching for both the hdr and dat.</returns>
-    public (string[] valid, string[] invalid) GetSoundPacks()
+    public SoundPackName[] GetSoundPacks()
     {
-        // Gets all the .hdr files, relative to the temp folder.
-        var headerPaths = 
-            Directory.EnumerateFiles(_extractedHeaderFileFolder, "*.hdr", SearchOption.AllDirectories)
-            .Select(p => Path.GetRelativePath(_extractedHeaderFileFolder, p)) // Remove the folder path
-            .Select(p => Path.ChangeExtension(p, null)); // Remove the extension
-        
-        // Gets all the .dat files, relative to the sound packs folder.
-        var dataPaths =
-            Directory.EnumerateFiles(_soundPacksFolder, "*.dat", SearchOption.AllDirectories)
-            .Select(p => Path.GetRelativePath(_soundPacksFolder, p)) // Remove the folder path
-            .Select(p => Path.ChangeExtension(p, null)); // Remove the extension
+        // Gets all the .hdr and .dat files. Get their path and filename.
+        var hdrPaths = Directory.EnumerateFiles(_extractedHeaderFileFolder, "*.hdr", SearchOption.AllDirectories).ToArray();
+        var datPaths = Directory.EnumerateFiles(_soundPacksFolder, "*.dat", SearchOption.AllDirectories).ToArray();
+        var hdrNames = hdrPaths.Select(n => Path.GetFileNameWithoutExtension(n)).ToArray();
+        var datNames = datPaths.Select(n => Path.GetFileNameWithoutExtension(n)).ToArray();
 
-        // If a .dat exists for an .hdr then it's valid, If not then its invalid.
-        var soundPacks = headerPaths.ToLookup(p => dataPaths.Contains(p));
-        return ([..soundPacks[true]], [..soundPacks[false]]);
+        // Confirm names are unique.
+        Debug.Assert(
+            hdrNames.Distinct().Count() == hdrNames.Length,
+            "Duplicate .hdr file names found. Please report this bug or make sure you didnt tamper with the temp folder."
+        );
+       Debug.Assert(
+            datNames.Distinct().Count() == datNames.Length,
+            "Duplicate .dat file names found. Please report this bug or make sure you didnt duplicate the .dat files yourselve."
+        );
+        
+        // Create SoundPackName array
+        var datPathLookup = datPaths.ToDictionary(p => Path.GetFileNameWithoutExtension(p) ?? "", p => p);
+        var soundPackNames = hdrPaths.Select(hdrPath => 
+        {
+            // For each header path, check if the name exists on the datPathLookup.
+            // If it's found then set to valid and set the datPath to it. If not found then
+            // set as invalid and set the datPath as empty.
+            var hdrName = Path.GetFileNameWithoutExtension(hdrPath);
+            datPathLookup.TryGetValue(hdrName, out var foundDatPath);
+            return new SoundPackName(foundDatPath != null, hdrName, hdrPath, foundDatPath ?? "");
+        });
+        return [.. soundPackNames];
     }
 
     /// <summary>
@@ -384,4 +395,6 @@ public sealed class SoundPacks : IDisposable
         _disposed = true;
         GC.SuppressFinalize(this);
     }
+
+    public record SoundPackName(bool Valid, string Name, string HdrPath, string DatPath);
 }

@@ -20,8 +20,15 @@ public class UnitTest1
         string narrPath = speech + "narr";
         string output = "/home/eric/Downloads/output";
 
-        // using var soundPacks = new SoundPacks(animPath, tools);
         using var soundPacks = new SoundPacks(charPath, tools);
+
+        var names = soundPacks.GetSoundPacks();
+        // Console.WriteLine($"{valid.Length}, {invalid.Length}");
+
+        foreach (var name in names)
+        {
+            Console.WriteLine(name);
+        }
 
 
 
