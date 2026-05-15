@@ -179,7 +179,7 @@ namespace SSXLibrary.FileHandlers
                 {
                     using (Stream stream1 = File.Open(HolderPaths[i], FileMode.Open))
                     {
-                        stream.Position = (hdrHandler.fileHeaders[i].OffsetInt * 0x100) / (hdrHandler.AligmentSize + 1);
+                        stream.Position = (hdrHandler.fileHeaders[i].OffsetInt * 0x100) * (hdrHandler.AligmentSize + 1);
 
                         StreamUtil.WriteStreamIntoStream(stream, stream1);
                     }
@@ -202,7 +202,7 @@ namespace SSXLibrary.FileHandlers
 
             Directory.CreateDirectory(TempAudioDirectory);
             Directory.CreateDirectory(TempAudioDirectory + "/Holder");
-            File.Copy(SXDirectory + "/sx_2002.exe", TempDirectory + "/sx.exe", true);
+            File.Copy(SXDirectory + "/sx_2002.exe", TempAudioDirectory + "/sx.exe", true);
 
             if (File.Exists(FileSave))
             {
@@ -284,7 +284,7 @@ namespace SSXLibrary.FileHandlers
                 {
                     using (Stream stream1 = File.Open(HolderPaths[i], FileMode.Open))
                     {
-                        stream.Position = (hdrHandler.fileHeaders[i].OffsetInt * 0x100) / (hdrHandler.AligmentSize + 1);
+                        stream.Position = (hdrHandler.fileHeaders[i].OffsetInt * 0x100) * (hdrHandler.AligmentSize + 1);
 
                         StreamUtil.WriteStreamIntoStream(stream, stream1);
                     }

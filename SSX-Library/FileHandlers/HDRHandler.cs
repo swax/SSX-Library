@@ -1,4 +1,5 @@
 ﻿using SSX_Library.Internal.Utilities;
+using SSX_Library.Internal.Utilities.StreamExtensions;
 
 namespace SSXLibrary.FileHandlers
 {
@@ -13,6 +14,7 @@ namespace SSXLibrary.FileHandlers
         public int U5;
 
         public int GapSize;
+        public byte[] UnknownData;
 
         public List<FileHeader> fileHeaders = new List<FileHeader>();
         public List<int> Padding = new List<int>();
@@ -87,6 +89,10 @@ namespace SSXLibrary.FileHandlers
                         GapSize = (int)(NewPos - Pos);
                         stream.Position -= 1;
                     }
+
+                    stream.Position = Pos;
+                    UnknownData = stream.ReadBytes(GapSize);
+                    stream.Position = NewPos;
                 }
 
                 Padding = new List<int>();
@@ -152,7 +158,8 @@ namespace SSXLibrary.FileHandlers
             }
 
             //Garbage stuff here
-            stream.Position += GapSize;
+            stream.WriteBytes(UnknownData);
+            //stream.Position += GapSize;
 
 
             for (int i = 0; i < Padding.Count; i++)
