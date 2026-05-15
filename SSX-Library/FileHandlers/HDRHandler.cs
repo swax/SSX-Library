@@ -10,12 +10,12 @@ namespace SSXLibrary.FileHandlers
         public int EntryTypes;
         public int FileCount;
         public int PaddingCount;
-        public int AligmentSize;
+        public int LongFileMode;
         public int U5;
 
         public int GapSize;
         public byte[] UnknownData;
-        public byte[] EndFileData;
+        public byte[] EndFileData; //Sometimes it has ending data 
 
         public List<FileHeader> fileHeaders = new List<FileHeader>();
         public List<int> Padding = new List<int>();
@@ -28,7 +28,7 @@ namespace SSXLibrary.FileHandlers
                 EntryTypes = StreamUtil.ReadUInt8(stream);
                 FileCount = StreamUtil.ReadUInt8(stream);
                 PaddingCount = StreamUtil.ReadUInt8(stream);
-                AligmentSize = StreamUtil.ReadUInt8(stream); //Multi 0 == 1
+                LongFileMode = StreamUtil.ReadUInt8(stream); //Multi 0 == 1
                 U5 = StreamUtil.ReadInt16(stream);
 
                 if(EntryTypes == 0 || EntryTypes == 2)
@@ -115,7 +115,7 @@ namespace SSXLibrary.FileHandlers
             StreamUtil.WriteUInt8(stream, EntryTypes);
             StreamUtil.WriteUInt8(stream, fileHeaders.Count);
             StreamUtil.WriteUInt8(stream, Padding.Count);
-            StreamUtil.WriteUInt8(stream, AligmentSize);
+            StreamUtil.WriteUInt8(stream, LongFileMode);
             StreamUtil.WriteInt16(stream, U5);
 
             if (EntryTypes == 0 || EntryTypes == 2)
