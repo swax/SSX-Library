@@ -15,6 +15,7 @@ namespace SSXLibrary.FileHandlers
 
         public int GapSize;
         public byte[] UnknownData;
+        public byte[] EndFileData;
 
         public List<FileHeader> fileHeaders = new List<FileHeader>();
         public List<int> Padding = new List<int>();
@@ -92,7 +93,6 @@ namespace SSXLibrary.FileHandlers
 
                     stream.Position = Pos;
                     UnknownData = stream.ReadBytes(GapSize);
-                    stream.Position = NewPos;
                 }
 
                 Padding = new List<int>();
@@ -100,6 +100,8 @@ namespace SSXLibrary.FileHandlers
                 {
                     Padding.Add(StreamUtil.ReadInt8(stream));
                 }
+
+                EndFileData = stream.ReadBytes((int)(stream.Length - stream.Position));
 
             }
         }
@@ -139,8 +141,9 @@ namespace SSXLibrary.FileHandlers
                 }
                 if (EntryTypes == 2)
                 {
-                    StreamUtil.WriteUInt8(stream, TempHeader.Unknown);
                     StreamUtil.WriteInt16(stream, TempHeader.OffsetInt, true);
+                    StreamUtil.WriteUInt8(stream, TempHeader.Unknown2);
+                    StreamUtil.WriteUInt8(stream, TempHeader.EventID);
                 }
                 if (EntryTypes == 3)
                 {
@@ -161,15 +164,21 @@ namespace SSXLibrary.FileHandlers
             stream.WriteBytes(UnknownData);
             //stream.Position += GapSize;
 
-
             for (int i = 0; i < Padding.Count; i++)
             {
                 StreamUtil.WriteUInt8(stream, Padding[i]);
             }
 
+            stream.WriteBytes(EndFileData);
+                
+
             if (File.Exists(Path))
             {
                 File.Delete(Path);
+            }
+            while (File.Exists(Path))
+            {
+
             }
             var file = File.Create(Path);
             stream.Position = 0;
