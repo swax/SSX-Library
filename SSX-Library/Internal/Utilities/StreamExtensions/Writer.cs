@@ -11,6 +11,11 @@ namespace SSX_Library.Internal.Utilities.StreamExtensions;
 /// </remarks>
 internal static class Writer
 {
+    public static void WriteBytes(this Stream stream, byte[] bytes)
+    {
+        stream.Write(bytes);
+    }
+
     public static void WriteUInt16(this Stream stream, ushort value, ByteOrder byteOrder)
     {
         var buf = new byte[2];

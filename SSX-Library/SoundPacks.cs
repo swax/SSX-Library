@@ -2,6 +2,7 @@ using SSX_Library.Internal.Audio;
 using SSX_Library.Internal.Utilities;
 using SSX_Library.Internal.Utilities.StreamExtensions;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SSX_Library;
 
@@ -84,15 +85,15 @@ public sealed class SoundPacks : IDisposable
             "Duplicate .dat file names found. Please report this bug or make sure you didnt duplicate the .dat files yourselve."
         );
         
-        // Create SoundPackName array
-        var datPathLookup = datPaths.ToDictionary(p => Path.GetFileNameWithoutExtension(p) ?? "", p => p);
+    // Create SoundPackName array
+        var nameToDatPathLookup = datPaths.ToDictionary(p => Path.GetFileNameWithoutExtension(p) ?? "", p => p);
         var soundPackNames = hdrPaths.Select(hdrPath => 
         {
-            // For each header path, check if the name exists on the datPathLookup.
+            // For each header path, check if the name exists on the lookup table.
             // If it's found then set to valid and set the datPath to it. If not found then
             // set as invalid and set the datPath as empty.
             var hdrName = Path.GetFileNameWithoutExtension(hdrPath);
-            datPathLookup.TryGetValue(hdrName, out var foundDatPath);
+            nameToDatPathLookup.TryGetValue(hdrName, out var foundDatPath);
             return new SoundPackName(foundDatPath != null, hdrName, hdrPath, foundDatPath ?? "");
         });
         return [.. soundPackNames];
@@ -101,19 +102,18 @@ public sealed class SoundPacks : IDisposable
     /// <summary>
     /// Get the number of sounds in a sound pack.
     /// </summary>
-    /// <param name="soundPackName"> A valid sound pack name, obtainable through GetSoundPacks() </param>
-    public int GetSoundPackSoundCount(string soundPackName)
+    [SuppressMessage("Performance", "CA1822:Mark members as static")]
+    public int GetSoundPackSoundCount(SoundPackName soundPackName)
     {
         // Load the .hdr
-        var hdrPath = Path.Join(_extractedHeaderFileFolder, soundPackName + ".hdr");
-        if (!File.Exists(hdrPath))
+        if (!File.Exists(soundPackName.HdrPath))
         {
-            throw new FileNotFoundException("Could not find header file: " + hdrPath);
+            throw new FileNotFoundException("Could not find header file: " + soundPackName.HdrPath);
         }
 
         // Read and return the File count
         var hdr = new HDR();
-        hdr.Load(hdrPath);
+        hdr.Load(soundPackName.HdrPath);
         return hdr.FileCount;
     }
 
