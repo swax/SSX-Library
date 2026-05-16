@@ -1,21 +1,14 @@
-﻿using ICSharpCode.SharpZipLib.Core;
-using SSX_Library;
+﻿using SSX_Library;
 using SSX_Library.Internal.Utilities;
 using SSX_Library.Internal.Utilities.StreamExtensions;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Runtime.Intrinsics.Arm;
 using System.Security.Cryptography;
 using System.Text;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SSXLibrary
 {
     public class SSX3SoundPack
     {
-
         public static void FullExtract(string MainBig, string ExtractFolder, string SXDirectory)
         {
             //Extract Mainbig to the temp folder
@@ -24,7 +17,9 @@ namespace SSXLibrary
             string DATFolder = HiddenFolder + "\\DATFolder";
             string MUSFolder = HiddenFolder + "\\MUSFolder";
 
-            Directory.CreateDirectory(HiddenFolder);
+            DirectoryInfo di = Directory.CreateDirectory(HiddenFolder);
+            di.Attributes = FileAttributes.Directory | FileAttributes.Hidden;
+
             Directory.CreateDirectory(HDRFolder);
             Directory.CreateDirectory(DATFolder);
             Directory.CreateDirectory(MUSFolder);
@@ -158,6 +153,20 @@ namespace SSXLibrary
                     }
                 }
             }
+        }
+
+        public static void FullRebuild(string MainFolder, string MainBig, string SXDirectory)
+        {
+            //Get all HDR files
+
+            //Do a quick verify that original data hasnt been messed with
+
+            //Using each HDR file indivdually check each folder and there are matching wavs to confirm hash matches
+            //If not matching update with new hash and convert Wav to Mus
+            //Mark File as needing rebuild
+            //Once entire file checked if marked rebuild file into single DAT File
+
+
         }
     }
 }
