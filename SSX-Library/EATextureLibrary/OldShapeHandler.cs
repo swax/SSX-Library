@@ -755,6 +755,32 @@ namespace SSX_Library.EATextureLibrary
             ShapeImages[i] = tempimage;
         }
 
+        /// <summary>
+        /// Resolve a terrain lightmap image into a usable grayscale lightmap.
+        /// SSX Tricky terrain lightmaps are FullColor (RGBA) shapes whose real luminance lives
+        /// in the ALPHA channel (verified on GARI: alpha is a smooth 76..255 gradient, avg ~194;
+        /// the RGB channels are only a faint warm tint and blue is always 0). The legacy
+        /// <see cref="BrightenImage"/> path operated on RGB and ignored alpha, so the exported
+        /// PNGs came out dark and orange. This writes RGB = alpha (and sets alpha opaque) so the
+        /// PNG is a proper multiply lightmap. Non-destructive to <see cref="BrightenImage"/>/
+        /// <see cref="DarkenImage"/>, which stay symmetric for the SSH repack round-trip.
+        /// </summary>
+        public void ResolveLightmapImage(int i)
+        {
+            var img = ShapeImages[i].Image;
+            for (int y = 0; y < img.Height; y++)
+            {
+                for (int x = 0; x < img.Width; x++)
+                {
+                    byte l = img[x, y].A;   // luminance is stored in alpha
+                    img[x, y] = new Rgba32(l, l, l, 255);
+                }
+            }
+            var tmp = ShapeImages[i];
+            tmp.Image = img;
+            ShapeImages[i] = tmp;
+        }
+
         public struct ShapeImage
         {
             internal int Offset;
