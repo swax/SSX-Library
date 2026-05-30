@@ -723,9 +723,11 @@ namespace SSX_Library.EATextureLibrary
                 for (int x = 0; x < TempImage.Width; x++)
                 {
                     Rgba32 color = TempImage[x, y];
-                    color.R = (byte)(Math.Clamp(color.R * 2 -1,0,256));
-                    color.G = (byte)(Math.Clamp(color.G * 2 - 1, 0, 256));
-                    color.B = (byte)(Math.Clamp(color.B * 2 - 1, 0, 256));
+                    // Clamp ceiling is 255, not 256: (byte)256 wraps to 0, which would turn
+                    // any source channel >=129 black. Saturate to white instead.
+                    color.R = (byte)(Math.Clamp(color.R * 2 - 1, 0, 255));
+                    color.G = (byte)(Math.Clamp(color.G * 2 - 1, 0, 255));
+                    color.B = (byte)(Math.Clamp(color.B * 2 - 1, 0, 255));
 
                     TempImage[x,y] = color;
                 }
@@ -743,9 +745,9 @@ namespace SSX_Library.EATextureLibrary
                 for (int x = 0; x < TempImage.Width; x++)
                 {
                     Rgba32 color = TempImage[x, y];
-                    color.R = (byte)(Math.Clamp((color.R + 1 )/ 2,0,256));
-                    color.G = (byte)(Math.Clamp((color.G + 1) / 2, 0, 256));
-                    color.B = (byte)(Math.Clamp((color.B + 1) / 2, 0, 256));
+                    color.R = (byte)(Math.Clamp((color.R + 1) / 2, 0, 255));
+                    color.G = (byte)(Math.Clamp((color.G + 1) / 2, 0, 255));
+                    color.B = (byte)(Math.Clamp((color.B + 1) / 2, 0, 255));
 
                     TempImage[x, y] = color;
                 }
@@ -764,9 +766,23 @@ namespace SSX_Library.EATextureLibrary
         /// PNGs came out dark and orange. This writes RGB = alpha (and sets alpha opaque) so the
         /// PNG is a proper multiply lightmap. Non-destructive to <see cref="BrightenImage"/>/
         /// <see cref="DarkenImage"/>, which stay symmetric for the SSH repack round-trip.
+        ///
+        /// Only valid for <see cref="MatrixType.FullColor"/> shapes - the format terrain
+        /// lightmaps actually use. For anything else the luminance-in-alpha assumption does
+        /// not hold (e.g. paletted shapes whose alpha may have been doubled by
+        /// <see cref="AlphaFix"/>), so we leave the decoded image untouched and report it
+        /// rather than silently emitting garbage. Returns true if the resolve was applied.
         /// </summary>
-        public void ResolveLightmapImage(int i)
+        public bool ResolveLightmapImage(int i)
         {
+            if (ShapeImages[i].MatrixType != MatrixType.FullColor)
+            {
+                Console.WriteLine($"ResolveLightmapImage: shape {i} ({ShapeImages[i].Shortname}) is "
+                                  + $"{ShapeImages[i].MatrixType}, not FullColor - left as-is "
+                                  + "(luminance-in-alpha only holds for FullColor lightmaps).");
+                return false;
+            }
+
             var img = ShapeImages[i].Image;
             for (int y = 0; y < img.Height; y++)
             {
@@ -779,6 +795,7 @@ namespace SSX_Library.EATextureLibrary
             var tmp = ShapeImages[i];
             tmp.Image = img;
             ShapeImages[i] = tmp;
+            return true;
         }
 
         public struct ShapeImage
