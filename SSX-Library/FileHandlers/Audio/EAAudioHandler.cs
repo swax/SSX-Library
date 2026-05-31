@@ -96,9 +96,64 @@ namespace SSXLibrary.FileHandlers.Audio
             }
         }
 
-        public void DecodeAudio()
-        {
+        // ---- Decoded-stream accessors (valid after Load) ---------------------
+        public int SampleRate => schlHeader.SampleRate;
+        public int Channels   => schlHeader.ChannelCount > 0 ? schlHeader.ChannelCount : 1;
+        public int SampleCount => schlHeader.SampleCount;
 
+        /// <summary>
+        /// Decode the loaded SCDl blocks into interleaved 16-bit PCM.
+        ///
+        /// SSX Tricky (PS2) uses EA-XA (codec2 0x0A), split per channel: each SCDl block is
+        ///   [block_samples u32][per-channel data offset u32 * channels][channel data...]
+        /// and each channel's region is a run of mono EA-XA frames (1 header byte + 14 data
+        /// bytes -> 28 samples; header = coef-index in the high nibble, shift in the low).
+        /// Predictor history carries continuously across blocks per channel.
+        /// </summary>
+        /// <returns>Interleaved little-endian PCM16 samples (length = samplesPerChannel * channels).</returns>
+        public short[] DecodeAudio()
+        {
+            int nch = Channels;
+            if (nch < 1) nch = 1;
+
+            // Per-channel running predictor history (carried across blocks).
+            int[] hist1 = new int[nch];
+            int[] hist2 = new int[nch];
+
+            // Decode each channel into its own buffer, then interleave.
+            var channels = new List<short>[nch];
+            for (int c = 0; c < nch; c++) channels[c] = new List<short>();
+
+            foreach (var block in scdlHeaders)
+            {
+                byte[] d = block.AudioData;
+                if (d == null || d.Length < 4) continue;
+
+                int blockSamples = (int)EaXaCodec.ReadU32(d, 0);
+                // Block body (relative to the SCDl payload, i.e. after magic+size):
+                //   [0x00] block_samples (per channel)
+                //   [0x04] per-channel data offset u32 * channels   (ch0 = 0, ch1 = ~samples/28*15, ...)
+                //   [0x04 + 4*nch] one more u32 (purpose unknown; 0 on silent blocks) -- channel data follows
+                // Verified on GARI: with this base the silent intro decodes to 0 and music frames carry
+                // valid (low-nibble) coefficient indices.
+                int chanBase = 8 + 4 * nch;
+
+                for (int c = 0; c < nch; c++)
+                {
+                    int chanOffset = (int)EaXaCodec.ReadU32(d, 4 + 4 * c);
+                    int p = chanBase + chanOffset;
+                    EaXaCodec.DecodeChannel(d, ref p, blockSamples, channels[c], ref hist1[c], ref hist2[c]);
+                }
+            }
+
+            // Interleave (all channels carry the same sample count).
+            int perCh = channels[0].Count;
+            for (int c = 1; c < nch; c++) perCh = Math.Min(perCh, channels[c].Count);
+            var outPcm = new short[perCh * nch];
+            for (int i = 0; i < perCh; i++)
+                for (int c = 0; c < nch; c++)
+                    outPcm[i * nch + c] = channels[c][i];
+            return outPcm;
         }
 
         public int PatchRead(Stream stream)
