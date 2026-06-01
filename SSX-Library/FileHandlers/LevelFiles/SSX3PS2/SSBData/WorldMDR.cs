@@ -18,9 +18,7 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData
         public int U4;
 
         public float U6;
-        public float U7;
-        public float U8;
-        public float U9;
+        public Vector3 Scale;
 
         public int ModelDataOffset;
         public int U11Count;
@@ -39,9 +37,7 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData
             U4 = StreamUtil.ReadUInt32(stream);
 
             U6 = StreamUtil.ReadFloat(stream);
-            U7 = StreamUtil.ReadFloat(stream);
-            U8 = StreamUtil.ReadFloat(stream);
-            U9 = StreamUtil.ReadFloat(stream);
+            Scale = StreamUtil.ReadVector3(stream);
 
             ModelDataOffset = StreamUtil.ReadUInt32(stream);
             U11Count = StreamUtil.ReadUInt32(stream);
@@ -229,9 +225,9 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData
                                     {
                                         Vector3 vector3 = new Vector3();
 
-                                        vector3.X = StreamUtil.ReadInt16(stream) / 16f;
-                                        vector3.Y = StreamUtil.ReadInt16(stream) / 16f;
-                                        vector3.Z = StreamUtil.ReadInt16(stream) / 16f;
+                                        vector3.X = (StreamUtil.ReadInt16(stream) / 32767f) * Scale.X;
+                                        vector3.Y = (StreamUtil.ReadInt16(stream) / 32767f) * Scale.Y;
+                                        vector3.Z = (StreamUtil.ReadInt16(stream) / 32767f) * Scale.Z;
 
                                         TempModelData.Vertices.Add(vector3);
                                     }
@@ -503,9 +499,6 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData
             JsonModelObject.U4 = U4;
 
             JsonModelObject.U6 = U6;
-            JsonModelObject.U7 = U7;
-            JsonModelObject.U8 = U8;
-            JsonModelObject.U9 = U9;
 
             JsonModelObject.U12 = U12;
 
