@@ -522,9 +522,6 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData
 
                 NewObject.unknownS2 = new MDRJsonHandler.UnknownS2();
 
-                NewObject.unknownS2.BboxLow = ArrayConv.Vector3ToArray(modelObject.unknownS2.BboxLow);
-                NewObject.unknownS2.BboxHigh = ArrayConv.Vector3ToArray(modelObject.unknownS2.BboxHigh);
-
                 NewObject.unknownS2.U0 = modelObject.unknownS2.U0;
 
                 if (modelObject.modelFaces != null)

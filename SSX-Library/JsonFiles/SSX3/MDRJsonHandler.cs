@@ -73,8 +73,6 @@ namespace SSXLibrary.JsonFiles.SSX3
 
         public struct UnknownS2
         {
-            public float[] BboxLow;
-            public float[] BboxHigh;
             public int U0;
 
             public List<ModelDataHeaderStruct> ModelHeaderOffset;
