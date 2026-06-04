@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -52,7 +53,7 @@ namespace SSXLibrary.JsonFiles.SSX3
 
             public float U6;
 
-            public List<int> U12;
+            public List<ObjectID> U12;
 
             public List<ModelObject> ModelObjects;
         }

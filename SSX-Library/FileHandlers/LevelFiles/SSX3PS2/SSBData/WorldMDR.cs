@@ -23,7 +23,7 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData
         public int ModelDataOffset;
         public int U11Count;
 
-        public List<int> U12 = new List<int>();
+        public List<ObjectID> U12 = new List<ObjectID>();
 
         public List<ModelObject> ModelObjects = new List<ModelObject>();
 
@@ -42,11 +42,11 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData
             ModelDataOffset = StreamUtil.ReadUInt32(stream);
             U11Count = StreamUtil.ReadUInt32(stream);
 
-            U12 = new List<int>();
+            U12 = new List<ObjectID>();
 
             for (int i = 0; i < U11Count; i++)
             {
-                U12.Add(StreamUtil.ReadUInt32(stream));
+                U12.Add(WorldCommon.ObjectIDLoad(stream));
             }
 
             ModelObjects = new List<ModelObject>();
