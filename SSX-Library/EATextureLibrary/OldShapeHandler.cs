@@ -758,28 +758,32 @@ namespace SSX_Library.EATextureLibrary
         }
 
         /// <summary>
-        /// Resolve a terrain lightmap image into a usable grayscale lightmap.
-        /// SSX Tricky terrain lightmaps are FullColor (RGBA) shapes whose real luminance lives
-        /// in the ALPHA channel (verified on GARI: alpha is a smooth 76..255 gradient, avg ~194;
-        /// the RGB channels are only a faint warm tint and blue is always 0). The legacy
-        /// <see cref="BrightenImage"/> path operated on RGB and ignored alpha, so the exported
-        /// PNGs came out dark and orange. This writes RGB = alpha (and sets alpha opaque) so the
-        /// PNG is a proper multiply lightmap. Non-destructive to <see cref="BrightenImage"/>/
-        /// <see cref="DarkenImage"/>, which stay symmetric for the SSH repack round-trip.
+        /// Extract a terrain lightmap's INTENSITY (A_S) as a grayscale image: rewrites RGB = alpha
+        /// (alpha opaque). A convenience for viewing a lightmap, or for a neutral (uncoloured) multiply
+        /// lightmap.
         ///
-        /// Only valid for <see cref="MatrixType.FullColor"/> shapes - the format terrain
-        /// lightmaps actually use. For anything else the luminance-in-alpha assumption does
-        /// not hold (e.g. paletted shapes whose alpha may have been doubled by
-        /// <see cref="AlphaFix"/>), so we leave the decoded image untouched and report it
-        /// rather than silently emitting garbage. Returns true if the resolve was applied.
+        /// SSX lightmaps are a two-term GS blend (2002 GDC "Light maps on the PS2" slide, (c) EA):
+        ///   - alpha = A_S = max(C_L.R, C_L.G, C_L.B)  -> the per-texel light INTENSITY
+        ///   - RGB   = C_S = C_D - (C_D x C_L) / A_S   -> a source-colour residual that bakes in the
+        ///     base texture (dark/muddy on its own; the raw RGBA reads dark/orange because C_S is in RGB).
+        /// The full lit pixel is (C_D - C_S) x A_S - this helper keeps ONLY A_S and DISCARDS C_S, so the
+        /// result is the light's brightness without its colour. The coloured light C_L is entangled with
+        /// the base texture and is not recoverable from the lightmap alone. Verified on GARI: alpha a
+        /// smooth 76..255 gradient; RGB a faint warm tint with blue 0 (blue-dominant snow/sky light makes
+        /// blue the max channel -> C_S.B = 0).
+        ///
+        /// Only valid for <see cref="MatrixType.FullColor"/> shapes - the format lightmaps use. For
+        /// anything else the A_S-in-alpha layout does not hold (e.g. paletted shapes whose alpha may
+        /// have been doubled by <see cref="AlphaFix"/>), so we leave the image untouched and report
+        /// it rather than emit garbage. Returns true if the intensity was extracted.
         /// </summary>
-        public bool ResolveLightmapImage(int i)
+        public bool ExtractLightmapIntensity(int i)
         {
             if (ShapeImages[i].MatrixType != MatrixType.FullColor)
             {
-                Console.WriteLine($"ResolveLightmapImage: shape {i} ({ShapeImages[i].Shortname}) is "
+                Console.WriteLine($"ExtractLightmapIntensity: shape {i} ({ShapeImages[i].Shortname}) is "
                                   + $"{ShapeImages[i].MatrixType}, not FullColor - left as-is "
-                                  + "(luminance-in-alpha only holds for FullColor lightmaps).");
+                                  + "(intensity-in-alpha only holds for FullColor lightmaps).");
                 return false;
             }
 
@@ -788,7 +792,7 @@ namespace SSX_Library.EATextureLibrary
             {
                 for (int x = 0; x < img.Width; x++)
                 {
-                    byte l = img[x, y].A;   // luminance is stored in alpha
+                    byte l = img[x, y].A;   // intensity (A_S) is stored in alpha
                     img[x, y] = new Rgba32(l, l, l, 255);
                 }
             }
