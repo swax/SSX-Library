@@ -30,6 +30,11 @@ namespace SSXLibrary
 
         public bool Unilightmap;
 
+        // ISO-repack: seed the texture-name list so a TexturePath's index becomes its original ssh slot
+        // number (not appearance order), letting the verbatim ssh be reused. Names = the slots in index
+        // order ("0000.png", "0001.png", ...); leave null for the normal appearance-order behaviour.
+        public List<string>? SeedImageFiles = null;
+
         public int LTGGenerateMode = 1;
         //0 - Centre
         //1 - Origin
@@ -1270,7 +1275,7 @@ namespace SSXLibrary
 
         public void BuildTrickyLevelFiles(string LoadPath, string ExportPath)
         {
-            List<string> ImageFiles = new List<string>();
+            List<string> ImageFiles = SeedImageFiles != null ? new List<string>(SeedImageFiles) : new List<string>();
 
             ExportPath = ExportPath.Substring(0, ExportPath.Length - 4);
 
@@ -2205,6 +2210,10 @@ namespace SSXLibrary
 
             if (PBDGenerate)
             {
+                // Header texture count (0x34) sizes the .ssh index space; without it every TextureAssigment
+                // is out of range and terrain renders untextured. The build never set it otherwise. When
+                // reusing the original ssh (seeded), match its page count exactly, not the appended list.
+                pbdHandler.NumTextures = SeedImageFiles != null ? SeedImageFiles.Count : ImageFiles.Count;
                 //ErrorManager.ErrorMessage = "Error Saving PDB File";
                 Console.WriteLine("Saving PDB File");
                 pbdHandler.SaveNew(ExportPath + ".pbd");
