@@ -196,8 +196,6 @@ namespace SSX_Library.FileHandlers.LevelFiles.Tricky
                 WorldBounds2 = Vector3.Max(WorldBounds2, pbdHandler.particleInstances[i].HighestXYZ);
             }
 
-            //Apparently was missing?
-            WorldBounds3 = Vector3.Lerp(WorldBounds1, WorldBounds2, 0.5f);
 
 
             mainBboxSize = NewMainBoxSize;
@@ -285,6 +283,7 @@ namespace SSX_Library.FileHandlers.LevelFiles.Tricky
             bool[] LightBools = new bool[pbdHandler.lights.Count];
             bool[] ParticleBools = new bool[pbdHandler.particleInstances.Count];
 
+
             //SetBoxes
             for (int y = 0; y < pointerListCount; y++)
             {
@@ -295,9 +294,9 @@ namespace SSX_Library.FileHandlers.LevelFiles.Tricky
                     TempMainBox.patchIndex = new List<int>();
                     for (int i = 0; i < pbdHandler.Patches.Count; i++)
                     {
-                        Vector3 MidPoint = Vector3.Lerp(pbdHandler.Patches[i].LowestXYZ, pbdHandler.Patches[i].HighestXYZ, 0.5f);
-
-                        if (AABB.IntersectsPoint(MidPoint, TempMainBox.WorldBounds1, TempMainBox.WorldBounds2) && !Patchbools[i])
+                        // Overlap, not midpoint: a patch bigger than a cell must be listed in EVERY cell it
+                        // covers, or collision drops out over the parts outside its centre cell (fall-through).
+                        if (AABB.IntersectingSquares(TempMainBox.WorldBounds1, TempMainBox.WorldBounds2, pbdHandler.Patches[i].LowestXYZ, pbdHandler.Patches[i].HighestXYZ))
                         {
                             TempMainBox.Modified = true;
                             Patchbools[i] = true;
@@ -346,7 +345,7 @@ namespace SSX_Library.FileHandlers.LevelFiles.Tricky
                     TempMainBox.lightCrossingIndex = new List<int>();
                     for (int i = 0; i < pbdHandler.lights.Count; i++)
                     {
-                        if (AABB.IntersectsAABB(TempMainBox.WorldBounds1, TempMainBox.WorldBounds2, pbdHandler.lights[i].LowestXYZ, pbdHandler.lights[i].HighestXYZ))
+                        if (AABB.IntersectingSquares(TempMainBox.WorldBounds1, TempMainBox.WorldBounds2, pbdHandler.lights[i].LowestXYZ, pbdHandler.lights[i].HighestXYZ))
                         {
                             TempMainBox.lightCrossingIndex.Add(i);
                         }
@@ -385,12 +384,12 @@ namespace SSX_Library.FileHandlers.LevelFiles.Tricky
                             TempNodeBox.PatchIndex = new List<int>();
                             for (int i = 0; i < TempMainBox.patchIndex.Count; i++)
                             {
-                                Vector3 MidPoint = Vector3.Lerp(pbdHandler.Patches[TempMainBox.patchIndex[i]].LowestXYZ, pbdHandler.Patches[TempMainBox.patchIndex[i]].HighestXYZ, 0.5f);
-                                if (AABB.IntersectsPoint(MidPoint, TempNodeBox.WorldBounds1, TempNodeBox.WorldBounds2) && !NodePatchBools[i])
+                                int pi = TempMainBox.patchIndex[i];
+                                if (AABB.IntersectingSquares(TempNodeBox.WorldBounds1, TempNodeBox.WorldBounds2, pbdHandler.Patches[pi].LowestXYZ, pbdHandler.Patches[pi].HighestXYZ))
                                 {
                                     TempNodeBox.Modified = true;
                                     NodePatchBools[i] = true;
-                                    TempNodeBox.PatchIndex.Add(TempMainBox.patchIndex[i]);
+                                    TempNodeBox.PatchIndex.Add(pi);
                                 }
                             }
                             //Generate Instance List
@@ -454,7 +453,7 @@ namespace SSX_Library.FileHandlers.LevelFiles.Tricky
                             TempNodeBox.LightCrossingIndex = new List<int>();
                             for (int i = 0; i < TempMainBox.lightCrossingIndex.Count; i++)
                             {
-                                if (AABB.IntersectsAABB(TempNodeBox.WorldBounds1, TempNodeBox.WorldBounds2, pbdHandler.lights[TempMainBox.lightCrossingIndex[i]].LowestXYZ, pbdHandler.lights[TempMainBox.lightCrossingIndex[i]].HighestXYZ))
+                                if (AABB.IntersectingSquares(TempNodeBox.WorldBounds1, TempNodeBox.WorldBounds2, pbdHandler.lights[TempMainBox.lightCrossingIndex[i]].LowestXYZ, pbdHandler.lights[TempMainBox.lightCrossingIndex[i]].HighestXYZ))
                                 {
                                     TempNodeBox.LightCrossingIndex.Add(TempMainBox.lightCrossingIndex[i]);
                                 }
@@ -520,7 +519,8 @@ namespace SSX_Library.FileHandlers.LevelFiles.Tricky
                             {
                                 if (NodeInstanceBools[i])
                                 {
-                                    //MessageBox.Show("Instance Not Added To LTG " + TempMainBox.instanceIndex[i]);
+                                    // Was MessageBox.Show in the WinForms tool; just warn to stderr here.
+                                    Console.Error.WriteLine("Instance Not Added To LTG " + TempMainBox.instanceIndex[i]);
                                 }
                             }
                         }
