@@ -713,11 +713,39 @@ namespace SSX_Library.EATextureLibrary
             ShapeImages[i] = temp;
         }
 
-        //Neg 1 possibly not required
-        //test
-        public void BrightenImage(int i)
+        // Double the RGB to undo the PS2 GS half-bright colour store (stored 0x80 == 1.0). Returns true
+        // if the image was doubled.
+        //
+        // guard=false (the default) doubles every pixel. The level, skybox, crowd and board/ski banks use
+        // this: every image in them is half-bright. The crowd bank is premultiplied against its half-value
+        // alpha, and the same doubling restores its opaque colour to full range.
+        //
+        // guard=true doubles only when the image's opaque texels (A >= 0x80) are all <= 0x80; a single
+        // opaque channel over 0x80 marks the image full-range and leaves it unchanged. The opaque test
+        // reads the stored range from the interior and skips transparent/premultiplied edges, mirroring
+        // AlphaFix on the alpha channel. The shared PARTICLE sprite bank uses it for its per-image mix of
+        // half-bright glow art (the ex06-09 explosion frames) and full-range sprites (fog0, envr, the
+        // spray/needle sprites).
+        public bool BrightenImage(int i, bool guard = false)
         {
             var TempImage = ShapeImages[i].Image;
+
+            if (guard)
+            {
+                // Already stored full-range? (max opaque channel > 0x80) -> leave it untouched.
+                bool alreadyFullRange = false;
+                for (int y = 0; y < TempImage.Height && !alreadyFullRange; y++)
+                {
+                    for (int x = 0; x < TempImage.Width; x++)
+                    {
+                        Rgba32 c = TempImage[x, y];
+                        if (c.A < 0x80) continue;   // ignore transparent / premultiplied-down edges
+                        if (c.R > 0x80 || c.G > 0x80 || c.B > 0x80) { alreadyFullRange = true; break; }
+                    }
+                }
+                if (alreadyFullRange) return false;
+            }
+
             for (int y = 0; y < TempImage.Height; y++)
             {
                 for (int x = 0; x < TempImage.Width; x++)
@@ -735,6 +763,7 @@ namespace SSX_Library.EATextureLibrary
             var tempimage = ShapeImages[i];
             tempimage.Image = TempImage;
             ShapeImages[i] = tempimage;
+            return true;
         }
 
         public void DarkenImage(int i)
