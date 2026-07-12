@@ -2285,13 +2285,7 @@ namespace SSXLibrary
                         Points.Add(new Vector3(aip.AIPaths[i].PathPoints[a, 0], aip.AIPaths[i].PathPoints[a, 1], aip.AIPaths[i].PathPoints[a, 2]));
                     }
 
-                    NewAIPATH.BBoxMax = NewAIPATH.PathPos;
-                    NewAIPATH.BBoxMin = NewAIPATH.PathPos;
-                    for (int a = 0; a < Points.Count; a++)
-                    {
-                        NewAIPATH.BBoxMax = Vector3.Max(NewAIPATH.BBoxMax, Points[a] + NewAIPATH.PathPos);
-                        NewAIPATH.BBoxMin = Vector3.Min(NewAIPATH.BBoxMin, Points[a] + NewAIPATH.PathPos);
-                    }
+                    AIPSOPHandler.ComputePathBounds(NewAIPATH.PathPos, Points, out NewAIPATH.BBoxMin, out NewAIPATH.BBoxMax);
 
                     NewAIPATH.VectorPoints = AIPSOPHandler.GenerateNewVectors(Points);
 
@@ -2332,13 +2326,7 @@ namespace SSXLibrary
                         Points.Add(new Vector3(aip.RaceLines[i].PathPoints[a, 0], aip.RaceLines[i].PathPoints[a, 1], aip.RaceLines[i].PathPoints[a, 2]));
                     }
 
-                    NewAIPATH.BBoxMax = NewAIPATH.PathPos;
-                    NewAIPATH.BBoxMin = NewAIPATH.PathPos;
-                    for (int a = 0; a < Points.Count; a++)
-                    {
-                        NewAIPATH.BBoxMax = Vector3.Max(NewAIPATH.BBoxMax, Points[a] + NewAIPATH.PathPos);
-                        NewAIPATH.BBoxMin = Vector3.Min(NewAIPATH.BBoxMin, Points[a] + NewAIPATH.PathPos);
-                    }
+                    AIPSOPHandler.ComputePathBounds(NewAIPATH.PathPos, Points, out NewAIPATH.BBoxMin, out NewAIPATH.BBoxMax);
 
                     NewAIPATH.VectorPoints = AIPSOPHandler.GenerateNewVectors(Points);
 
@@ -2393,13 +2381,7 @@ namespace SSXLibrary
                         Points.Add(new Vector3(sop.AIPaths[i].PathPoints[a, 0], sop.AIPaths[i].PathPoints[a, 1], sop.AIPaths[i].PathPoints[a, 2]));
                     }
 
-                    NewAIPATH.BBoxMax = NewAIPATH.PathPos;
-                    NewAIPATH.BBoxMin = NewAIPATH.PathPos;
-                    for (int a = 0; a < Points.Count; a++)
-                    {
-                        NewAIPATH.BBoxMax = Vector3.Max(NewAIPATH.BBoxMax, Points[a] + NewAIPATH.PathPos);
-                        NewAIPATH.BBoxMin = Vector3.Min(NewAIPATH.BBoxMin, Points[a] + NewAIPATH.PathPos);
-                    }
+                    AIPSOPHandler.ComputePathBounds(NewAIPATH.PathPos, Points, out NewAIPATH.BBoxMin, out NewAIPATH.BBoxMax);
 
                     NewAIPATH.VectorPoints = AIPSOPHandler.GenerateNewVectors(Points);
 
@@ -2441,13 +2423,7 @@ namespace SSXLibrary
                         Points.Add(new Vector3(sop.RaceLines[i].PathPoints[a, 0], sop.RaceLines[i].PathPoints[a, 1], sop.RaceLines[i].PathPoints[a, 2]));
                     }
 
-                    NewAIPATH.BBoxMax = NewAIPATH.PathPos;
-                    NewAIPATH.BBoxMin = NewAIPATH.PathPos;
-                    for (int a = 0; a < Points.Count; a++)
-                    {
-                        NewAIPATH.BBoxMax = Vector3.Max(NewAIPATH.BBoxMax, Points[a] + NewAIPATH.PathPos);
-                        NewAIPATH.BBoxMin = Vector3.Min(NewAIPATH.BBoxMin, Points[a] + NewAIPATH.PathPos);
-                    }
+                    AIPSOPHandler.ComputePathBounds(NewAIPATH.PathPos, Points, out NewAIPATH.BBoxMin, out NewAIPATH.BBoxMax);
 
                     NewAIPATH.VectorPoints = AIPSOPHandler.GenerateNewVectors(Points);
 
