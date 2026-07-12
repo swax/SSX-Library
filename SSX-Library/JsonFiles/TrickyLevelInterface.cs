@@ -1496,7 +1496,7 @@ namespace SSXLibrary
                         segments.LowestXYZ = LowestXYZSegment;
                         LowestXYZSpline = Vector3.Min(LowestXYZSpline, LowestXYZSegment);
 
-                        segments.SegmentDisatnce = LineStrip.Distance(bezierUtil.RawPoints[..4]);
+                        segments.SegmentDisatnce = bezierUtil.ArcLength;
                         segments.PreviousSegmentsDistance = PreviousSegmentDiffrence;
                         PreviousSegmentDiffrence += segments.SegmentDisatnce;
                         segments.Unknown32 = 4311823;
