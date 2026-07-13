@@ -50,7 +50,7 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData
             }
 
             ModelObjects = new List<ModelObject>();
-
+            int Index = 0;
             for (int i = 0; i < U1Count; i++)
             {
                 ModelObject TempS1 = new ModelObject();
@@ -84,7 +84,8 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData
                         long TempPos1 = stream.Position;
 
                         stream.Position = TempS5.HeaderOffset;
-
+                        TempS5.ModelPath = objectID.RID + "-" + Index + ".obj";
+                        Index++;
                         TempS5.MaterialID = StreamUtil.ReadInt16(stream);
                         TempS5.U1 = StreamUtil.ReadInt16(stream);
                         TempS5.ModelDataOffset = StreamUtil.ReadInt24(stream);
@@ -487,6 +488,7 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData
         public MDRJsonHandler.MainModelHeader SaveModel(string Path)
         {
             MDRJsonHandler.MainModelHeader JsonModelObject = new MDRJsonHandler.MainModelHeader();
+            int Index = 0;
 
             JsonModelObject.Name = Name;
 
@@ -531,7 +533,7 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData
                     {
                         var TempModelOffset = new MDRJsonHandler.ModelDataHeaderStruct();
 
-                        TempModelOffset.ModelPath = objectID.RID + "-" + (i+j) + ".obj";
+                        TempModelOffset.ModelPath = modelObject.unknownS2.ModelHeaderOffset[j].ModelPath;
 
                         TempModelOffset.MaterialID = modelObject.unknownS2.ModelHeaderOffset[j].MaterialID;
                         TempModelOffset.U1 = modelObject.unknownS2.ModelHeaderOffset[j].U1;
@@ -543,7 +545,7 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData
                         TempModelOffset.U03 = modelObject.unknownS2.ModelHeaderOffset[j].U03;
 
                         TempModelOffset.U04 = ArrayConv.Vector4ToArray(modelObject.unknownS2.ModelHeaderOffset[j].U04);
-
+                        Index++;
                         NewObject.unknownS2.ModelHeaderOffset.Add(TempModelOffset);
                     }
                 }
@@ -661,7 +663,7 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData
 
                             if (Data.modelFaces.Count != 0)
                             {
-                                File.WriteAllText(Path + "/" + objectID.RID + "-" + a + ".obj", output);
+                                File.WriteAllText(Path + "/" + Data.ModelPath, output);
                             }
                         }
                     }
