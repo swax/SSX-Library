@@ -282,34 +282,34 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData
             for (int i = 0; i < ModelObjects.Count; i++)
             {
                 var S1 = ModelObjects[i];
-                S1.modelFaces = new List<ModelFace>();
 
                 if (S1.U1Offset > 0)
                 {
-                    for (int a = 0; a < S1.unknownS2.ModelHeaderOffset.Count; a++)
+                    for (int j = 0; j < S1.unknownS2.ModelHeaderOffset.Count; j++)
                     {
-                        var S5 = S1.unknownS2.ModelHeaderOffset[a];
-                        Rotation = false;
-                        for (int b = 0; b < S5.ModelOffsetHeaders.Count / 2; b++)
+                        var S2 = S1.unknownS2.ModelHeaderOffset[j];
+
+                        for (int k = 0; k < S2.ModelOffsetHeaders.Count / 2; k++)
                         {
-                            int VerticesUVID = b * 2;
-                            int NormalID = b * 2 + 1;
+                            var S3 = S2.ModelOffsetHeaders[k * 2];
 
-                            var VerticesUV = S5.ModelOffsetHeaders[VerticesUVID];
-                            var Normal = S5.ModelOffsetHeaders[NormalID];
+                            S3.modelFaces = new List<ModelFace>();
 
-                            S1.modelFaces.AddRange(GenerateFaces(VerticesUV.modelVandUVData, Normal.modelNormalData));
+                            int VerticesUVID = k * 2;
+                            int NormalID = k * 2 + 1;
+
+                            var VerticesUV = S2.ModelOffsetHeaders[VerticesUVID];
+                            var Normal = S2.ModelOffsetHeaders[NormalID];
+
+                            S3.modelFaces.AddRange(GenerateFaces(VerticesUV.modelVandUVData, Normal.modelNormalData));
 
                         }
 
-                        S1.unknownS2.ModelHeaderOffset[a] = S5;
+                        S1.unknownS2.ModelHeaderOffset[j] = S2;
                     }
                 }
-
                 ModelObjects[i] = S1;
             }
-
-
         }
         bool Rotation = false;
         public List<ModelFace> GenerateFaces(ModelVandUVData ModelData, ModelNormalData modelNormalData)
@@ -776,8 +776,6 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData
             public Matrix4x4 matrix4X4;
             public UnknownS2 unknownS2;
             public UnknownS3 unknownS3;
-
-            public List<ModelFace> modelFaces;
         }
 
         public struct UnknownS2
@@ -820,13 +818,14 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData
 
             public Vector4 U04;
 
-            public string ModelPath;
-
             public List<ModelData> ModelOffsetHeaders;
         }
 
         public struct ModelData
         {
+            public string ModelPath;
+            public List<ModelFace> modelFaces;
+
             public int LineCount;
             public int U1;
             public int ModelOffset;

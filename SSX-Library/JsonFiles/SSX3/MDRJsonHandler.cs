@@ -68,13 +68,12 @@ namespace SSXLibrary.JsonFiles.SSX3
 
             public UnknownS2 unknownS2;
             public UnknownS3 unknownS3;
-
-            public string ModelPath;
         }
 
         public struct UnknownS2
         {
             public int U0;
+            public string ModelPath;
 
             public List<ModelDataHeaderStruct> ModelHeaderOffset;
         }
