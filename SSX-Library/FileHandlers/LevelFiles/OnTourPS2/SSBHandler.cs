@@ -1,5 +1,6 @@
 ﻿using SSX_Library.Internal;
 using SSX_Library.Internal.Utilities;
+using System.Diagnostics;
 using System.IO;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -122,8 +123,8 @@ namespace SSXLibrary.FileHandlers.LevelFiles.OnTourPS2
                 int a = 0;
                 int splitCount = 1;
                 int FilePos = 0;
-                int ChunkID = -1;
-                int ChunkMax = -1;
+                bool Start = false;
+                int U0 = 0;
                 Directory.CreateDirectory(extractPath + "//Textures");
                 Directory.CreateDirectory(extractPath + "//Lightmaps");
                 Directory.CreateDirectory(extractPath + "//Levels");
@@ -137,31 +138,36 @@ namespace SSXLibrary.FileHandlers.LevelFiles.OnTourPS2
 
                     int Size = StreamUtil.ReadUInt32(stream);
                     int ReadSize = 8;
-                    if (ChunkID == -1)
+                    if (!Start)
                     {
-                        ChunkMax = StreamUtil.ReadUInt32(stream);
+                        Start = true;
+                        U0 = StreamUtil.ReadUInt32(stream);
+                        if(U0!=3)
+                        {
+                            Debug.WriteLine("Not 3");
+                        }
                         ReadSize = 12;
                     }
-                    ChunkID++;
 
                     byte[] Buffer = StreamUtil.ReadBytes(stream, Size - ReadSize);
+
+                    if (Refpack.HasRefpackSignature(Buffer))
+                    {
+                        Buffer = Refpack.Decompress(Buffer);
+                    }
+
                     StreamUtil.WriteBytes(DataMemoryStream, Buffer);
 
-                    if(ChunkID==ChunkMax)
+                    if(MagicWords=="CEND")
                     {
+                        Start= false;
+                        var file = File.Create(extractPath + FilePos + ".bin");
                         DataMemoryStream.Position = 0;
-                        byte[] Data = new byte[DataMemoryStream.Length];
-                        byte[] DecompressedData = new byte[1];
-                        Data = StreamUtil.ReadBytes(DataMemoryStream, (int)DataMemoryStream.Length);
-                        DecompressedData = Refpack.Decompress(Data);
-                        MemoryStream memoryStream = new MemoryStream();
-                        StreamUtil.WriteBytes(memoryStream, DecompressedData);
-                        var file = File.Create(extractPath + "0.bin");
-                        memoryStream.Position = 0;
-                        memoryStream.CopyTo(file);
-                        memoryStream.Dispose();
-                        memoryStream = new MemoryStream();
+                        DataMemoryStream.CopyTo(file);
+                        DataMemoryStream.Dispose();
+                        DataMemoryStream = new MemoryStream();
                         file.Close();
+                        FilePos++;
                     }
                 }
             }
