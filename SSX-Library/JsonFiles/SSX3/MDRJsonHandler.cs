@@ -73,7 +73,6 @@ namespace SSXLibrary.JsonFiles.SSX3
         public struct UnknownS2
         {
             public int U0;
-            public string ModelPath;
 
             public List<ModelDataHeaderStruct> ModelHeaderOffset;
         }
@@ -92,7 +91,9 @@ namespace SSXLibrary.JsonFiles.SSX3
 
         public struct ModelDataHeaderStruct
         {
-            public int U0;
+            public string ModelPath;
+
+            public int MaterialID;
             public int U1;
             public int U4;
 
