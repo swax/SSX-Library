@@ -56,6 +56,16 @@ namespace SSXLibrary
         public MaterialJsonHandler SkyMaterialJson = new MaterialJsonHandler();
         public ModelJsonHandler SkyPrefabJsonHandler = new ModelJsonHandler();
 
+        /// <summary>Shortname of a shape-bank page, or null (with a console warning) when the index is
+        /// outside the bank - a pbd can carry texture IDs its ssh never shipped, and extraction should
+        /// report those instead of throwing.</summary>
+        private static string? ShapeNameOrNull(OldShapeHandler bank, int id, string context)
+        {
+            if (id >= 0 && id < bank.ShapeImages.Count) return bank.ShapeImages[id].Shortname;
+            Console.WriteLine($"WARN: {context} references texture {id} but the ssh has {bank.ShapeImages.Count} pages - TexturePath left unset.");
+            return null;
+        }
+
         public void ExtractTrickyLevelFiles(string LoadPath, string ExportPath)
         {
             Console.WriteLine("Loading ADL File");
@@ -146,7 +156,8 @@ namespace SSXLibrary
                 {
                     patch.TrickOnlyPatch =true;
                 }
-                patch.TexturePath = TextureHandler.ShapeImages[pbdHandler.Patches[i].TextureAssigment].Shortname + ".png";
+                string? patchTex = ShapeNameOrNull(TextureHandler, pbdHandler.Patches[i].TextureAssigment, $"patch {i}");
+                if (patchTex != null) patch.TexturePath = patchTex + ".png";
                 patch.LightmapID = pbdHandler.Patches[i].LightmapID;
                 patchPoints.Patches.Add(patch);
             }
@@ -322,7 +333,8 @@ namespace SSXLibrary
 
                 if (pbdHandler.materials[i].TextureID != -1)
                 {
-                    TempMaterial.TexturePath = TextureHandler.ShapeImages[pbdHandler.materials[i].TextureID].Shortname + ".png";
+                    string? matTex = ShapeNameOrNull(TextureHandler, pbdHandler.materials[i].TextureID, $"material {i} ({mapHandler.Materials[i].Name})");
+                    if (matTex != null) TempMaterial.TexturePath = matTex + ".png";
                 }
                 TempMaterial.UnknownInt2 = pbdHandler.materials[i].UnknownInt2;
                 TempMaterial.UnknownInt3 = pbdHandler.materials[i].UnknownInt3;
@@ -347,7 +359,8 @@ namespace SSXLibrary
                 {
                     for (int a = 0; a < pbdHandler.textureFlipbooks[pbdHandler.materials[i].TextureFlipbookID].ImagePositions.Count; a++)
                     {
-                        TempMaterial.TextureFlipbook.Add(TextureHandler.ShapeImages[pbdHandler.textureFlipbooks[pbdHandler.materials[i].TextureFlipbookID].ImagePositions[a]].Shortname + ".png");
+                        string? flipTex = ShapeNameOrNull(TextureHandler, pbdHandler.textureFlipbooks[pbdHandler.materials[i].TextureFlipbookID].ImagePositions[a], $"material {i} flipbook frame {a}");
+                        if (flipTex != null) TempMaterial.TextureFlipbook.Add(flipTex + ".png");
                     }
                 }
                 TempMaterial.UnknownInt20 = pbdHandler.materials[i].UnknownInt20;
@@ -1101,7 +1114,8 @@ namespace SSXLibrary
 
                     TempMaterial.MaterialName = "Skybox Material " + i.ToString();
 
-                    TempMaterial.TexturePath = SkyboxHandler.ShapeImages[skypbdHandler.materials[i].TextureID].Shortname + ".png";
+                    string? skyTex = ShapeNameOrNull(SkyboxHandler, skypbdHandler.materials[i].TextureID, $"sky material {i}");
+                    if (skyTex != null) TempMaterial.TexturePath = skyTex + ".png";
                     TempMaterial.UnknownInt2 = skypbdHandler.materials[i].UnknownInt2;
                     TempMaterial.UnknownInt3 = skypbdHandler.materials[i].UnknownInt3;
                     TempMaterial.UnknownFloat1 = skypbdHandler.materials[i].UnknownFloat1;
@@ -1383,7 +1397,12 @@ namespace SSXLibrary
                     patch.Point4 = VectorConv.Vector3ToVector4(bezierUtil.RawPoints[15]);
 
                     patch.SurfaceType = ImportPatch.SurfaceType;
-                    patch.Unknown2 = 41;
+                    // Four packed 3-bit resource-kind tags for the four i16 slots below:
+                    // texture (1), lightmap (5), unused (0), unused (0).
+                    patch.ResourceKindTags = 0x29;
+                    // The load-time resource remapper walks all four slots, so keep the unused IDs null.
+                    patch.UnusedResourceId2 = -1;
+                    patch.UnusedResourceId3 = -1;
                     if (ImportPatch.TrickOnlyPatch)
                     {
                         patch.PatchVisablity = 32768;
@@ -1953,6 +1972,11 @@ namespace SSXLibrary
                         }
                         else
                         {
+                            // A texture name outside the current list mints the next index. When the texture
+                            // bank is not regenerated alongside (SSHGenerate off, e.g. a seeded verbatim
+                            // bank), that index has no page behind it and ships dangling.
+                            if (!SSHGenerate)
+                                Console.WriteLine($"WARN: material {materialJson.Materials[i].MaterialName} references texture '{materialJson.Materials[i].TexturePath}' not in the texture list - index {ImageFiles.Count} has no page in a bank that is not regenerated.");
                             ImageFiles.Add(materialJson.Materials[i].TexturePath);
                             NewMaterial.TextureID = ImageFiles.Count - 1;
                         }
@@ -1997,6 +2021,8 @@ namespace SSXLibrary
                                 }
                                 else
                                 {
+                                    if (!SSHGenerate)
+                                        Console.WriteLine($"WARN: material {materialJson.Materials[i].MaterialName} flipbook references texture '{materialJson.Materials[i].TextureFlipbook[a]}' not in the texture list - index {ImageFiles.Count} has no page in a bank that is not regenerated.");
                                     ImageFiles.Add(materialJson.Materials[i].TextureFlipbook[a]);
                                     textureFlipbook.ImagePositions.Add(ImageFiles.Count - 1);
                                 }
