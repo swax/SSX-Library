@@ -311,7 +311,7 @@ namespace SSXLibrary
                 TempParticle.Rotation = ArrayConv.QuaternionToArray(Rotation);
                 TempParticle.Scale = ArrayConv.Vector3ToArray(Scale);
 
-                TempParticle.UnknownInt1 = pbdHandler.particleInstances[i].UnknownInt1;
+                TempParticle.ParticleModelIndex = pbdHandler.particleInstances[i].ParticleModelIndex;
                 TempParticle.LowestXYZ = ArrayConv.Vector3ToArray(pbdHandler.particleInstances[i].LowestXYZ);
                 TempParticle.HighestXYZ = ArrayConv.Vector3ToArray(pbdHandler.particleInstances[i].HighestXYZ);
                 TempParticle.UnknownInt8 = pbdHandler.particleInstances[i].UnknownInt8;
@@ -1790,7 +1790,7 @@ namespace SSXLibrary
 
                     TempParticle.matrix4X4 = matrix4X4;
 
-                    TempParticle.UnknownInt1 = particleInstanceJson.Particles[i].UnknownInt1;
+                    TempParticle.ParticleModelIndex = particleInstanceJson.Particles[i].ParticleModelIndex;
                     TempParticle.LowestXYZ = ArrayConv.ArrayToVector3(particleInstanceJson.Particles[i].LowestXYZ);
                     TempParticle.HighestXYZ = ArrayConv.ArrayToVector3(particleInstanceJson.Particles[i].HighestXYZ);
                     TempParticle.UnknownInt8 = particleInstanceJson.Particles[i].UnknownInt8;
