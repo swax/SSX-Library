@@ -586,7 +586,7 @@ namespace SSX_Library.FileHandlers.LevelFiles.Tricky.PS2
                     NewSubType.U7 = StreamUtil.ReadFloat(stream);
 
                     NewSubType.U8 = StreamUtil.ReadFloat(stream);
-                    NewSubType.U9 = StreamUtil.ReadUInt32(stream);
+                    NewSubType.U9 = StreamUtil.ReadFloat(stream);
                     NewSubType.U10 = StreamUtil.ReadFloat(stream);
                     NewSubType.U11 = StreamUtil.ReadFloat(stream);
 
@@ -1982,7 +1982,7 @@ namespace SSX_Library.FileHandlers.LevelFiles.Tricky.PS2
             public float U6;
             public float U7;
             public float U8;
-            public int U9;
+            public float U9;
             public float U10;
             public float U11;
             public float U12;

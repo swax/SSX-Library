@@ -1241,7 +1241,7 @@ namespace SSXLibrary.JsonFiles.Tricky
             public float U6;
             public float U7;
             public float U8;
-            public int U9;
+            public float U9;
             public float U10;
             public float U11;
             public float U12;
