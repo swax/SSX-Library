@@ -1,8 +1,7 @@
 ﻿using SSX_Library.Internal.Utilities;
-using SSX_Library.Internal.Utilities.StreamExtensions;
 using System.IO;
 
-namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2
+namespace SSXLibrary.FileHandlers.LevelFiles.OnTourPS2
 {
     public class PHMHandler
     {
@@ -11,7 +10,6 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2
         public int NumArrays;
 
         public List<ResourceLink> resourceLinks = new List<ResourceLink>();
-        
         public void LoadPHM(string path)
         {
             using (Stream stream = File.Open(path, FileMode.Open))
@@ -35,7 +33,7 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2
                         TempEntry.U0 = StreamUtil.ReadUInt32(stream);
                         TempEntry.U1 = StreamUtil.ReadUInt32(stream);
                         TempEntry.TrackID = StreamUtil.ReadInt8(stream);
-                        TempEntry.RID = stream.ReadUInt24();
+                        TempEntry.RID = StreamUtil.ReadUInt24(stream);
                         TempEntry.U3 = StreamUtil.ReadUInt32(stream);
 
                         TempEntryList.Entries.Add(TempEntry);
@@ -74,7 +72,7 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2
             public int U0;
             public int U1;
             public int TrackID;
-            public uint RID;
+            public int RID;
             public int U3;
         }
     }
