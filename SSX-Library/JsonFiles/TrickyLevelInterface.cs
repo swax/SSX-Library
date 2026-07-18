@@ -244,6 +244,11 @@ namespace SSXLibrary
                                 NewExternalSound.U4 = adlHandler.HashSounds[a].Sound.ExternalSounds[b].U4;
                                 NewExternalSound.U5 = adlHandler.HashSounds[a].Sound.ExternalSounds[b].U5;
                                 NewExternalSound.U6 = adlHandler.HashSounds[a].Sound.ExternalSounds[b].U6;
+                                NewExternalSound.U7 = adlHandler.HashSounds[a].Sound.ExternalSounds[b].U7;
+                                NewExternalSound.U8 = adlHandler.HashSounds[a].Sound.ExternalSounds[b].U8;
+                                NewExternalSound.U9 = adlHandler.HashSounds[a].Sound.ExternalSounds[b].U9;
+                                NewExternalSound.U10 = adlHandler.HashSounds[a].Sound.ExternalSounds[b].U10;
+                                NewExternalSound.U11 = adlHandler.HashSounds[a].Sound.ExternalSounds[b].U11;
                                 NewSound.ExternalSounds.Add(NewExternalSound);
                             }
                             instanceJson.Sounds = NewSound;
@@ -1616,6 +1621,11 @@ namespace SSXLibrary
                             NewExternalSound.U4 = Oldinstance.Sounds.Value.ExternalSounds[a].U4;
                             NewExternalSound.U5 = Oldinstance.Sounds.Value.ExternalSounds[a].U5;
                             NewExternalSound.U6 = Oldinstance.Sounds.Value.ExternalSounds[a].U6;
+                            NewExternalSound.U7 = Oldinstance.Sounds.Value.ExternalSounds[a].U7;
+                            NewExternalSound.U8 = Oldinstance.Sounds.Value.ExternalSounds[a].U8;
+                            NewExternalSound.U9 = Oldinstance.Sounds.Value.ExternalSounds[a].U9;
+                            NewExternalSound.U10 = Oldinstance.Sounds.Value.ExternalSounds[a].U10;
+                            NewExternalSound.U11 = Oldinstance.Sounds.Value.ExternalSounds[a].U11;
 
                             NewSound.Sound.ExternalSounds.Add(NewExternalSound);
                              
