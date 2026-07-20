@@ -1,5 +1,7 @@
 ﻿using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Processing.Processors.Quantization;
 using SSX_Library.Internal;
 using SSX_Library.Internal.Utilities;
 using SSX_Library.Internal.Utilities.StreamExtensions;
@@ -324,11 +326,13 @@ namespace SSX_Library.EATextureLibrary
                     Console.WriteLine("Over 16 Colour Limit " + sshImage.Shortname + " (" + i + "/" + ShapeImages.Count + ")");
                     sshImage.Image = ImageUtil.ReduceBitmapColorsFast(sshImage.Image, 16);
                 }
-                if (sshImage.colorsTable.Count > 256 && sshImage.MatrixType == MatrixType.EightBit && sshImage.MatrixType == MatrixType.EightBitCompressed 
-                    && sshImage.MatrixType == MatrixType.EightBitXbox)
+                if (sshImage.colorsTable.Count > 256 && sshImage.MatrixType == MatrixType.EightBit)
                 {
                     Console.WriteLine("Over 256 Colour Limit " + sshImage.Shortname + " (" + i + "/" + ShapeImages.Count + ")");
-                    sshImage.Image = ImageUtil.ReduceBitmapColorsFast(sshImage.Image, 256);
+                    // EightBit stores one byte per texel, so the palette must fit in 256 entries.
+                    // Quantize with alpha awareness; ReduceBitmapColorsFast is RGB-only and drops transparency.
+                    sshImage.Image.Mutate(x => x.Quantize(new WuQuantizer(new QuantizerOptions { MaxColors = 256 })));
+                    sshImage.colorsTable = ImageUtil.GetBitmapColorsFast(sshImage.Image).ToList();
                 }
                 ShapeImages[i] = sshImage;
             }
@@ -450,6 +454,17 @@ namespace SSX_Library.EATextureLibrary
                 var EncodedImage = EAEncode.EncodeMatrix2(shapeImage.Image);
                 Matrix = EncodedImage.Matrix;
                 Colours = EncodedImage.ColourTable;
+                // EncodeMatrix2 assigns texel indices in first-seen order, so the written palette must be
+                // its colour table, not the one prepared by SaveShape. Retail 8-bit shapes always carry a
+                // full 256-entry palette, so pad short tables to keep that layout.
+                shapeImage.colorsTable = Colours;
+                if (shapeImage.MatrixType == MatrixType.EightBit)
+                {
+                    while (shapeImage.colorsTable.Count < 256)
+                    {
+                        shapeImage.colorsTable.Add(new Rgba32());
+                    }
+                }
                 if (shapeImage.SwizzledImage)
                 {
                     Matrix = ByteUtil.Swizzle8(Matrix, shapeImage.Image.Width, shapeImage.Image.Height);
@@ -548,7 +563,8 @@ namespace SSX_Library.EATextureLibrary
                 Matrix[i * 4 + 3] = Color.A;
                 if (image.AlphaFix)
                 {
-                    Matrix[i * 4 + 3] = (byte)(Color.A / 2);
+                    // Halve into GS range, keeping the opaque endpoint exact (255 -> 128) like DarkenImage.
+                    Matrix[i * 4 + 3] = (byte)((Color.A + 1) / 2);
                 }
             }
 
