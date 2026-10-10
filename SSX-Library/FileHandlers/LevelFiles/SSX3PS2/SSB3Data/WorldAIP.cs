@@ -11,7 +11,8 @@ using System.Windows;
 
 namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData
 {
-    internal class WorldAIP
+    /// <summary>SSX 3 AI paths, track paths, events, and start-grid records in their native coordinates.</summary>
+    public class WorldAIP
     {
         public int MagicWords;
         public int NumAIPaths;
@@ -27,14 +28,20 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData
 
         public void LoadData(byte[] bytes)
         {
-            MemoryStream stream = new MemoryStream();
-            StreamUtil.WriteBytes(stream, bytes);
-            stream.Position = 0;
-
+            aiPaths = new List<AIPath>();
+            trackPaths = new List<TrackPath>();
+            u0Structs = new List<U0Struct>();
+            u1Structs = new List<U1Struct>();
+            MagicWords = NumAIPaths = NumTrackPaths = NumU0 = NumU1 = 0;
+            // Retail worlds include empty AIP resources for events without AI.
+            if (bytes.Length == 0) return;
+            if (bytes.Length < 8)
+                throw new InvalidDataException("An SSX 3 AIP resource must contain its magic and AI path count.");
+            using var stream = new MemoryStream(bytes, writable: false);
             MagicWords = StreamUtil.ReadInt32(stream);
             NumAIPaths = StreamUtil.ReadInt32(stream);
-
-            aiPaths = new List<AIPath>();
+            // A header with no AI paths is also accepted without the remaining empty tables.
+            if (bytes.Length == 8 && NumAIPaths == 0) return;
 
             for (int i = 0; i < NumAIPaths; i++)
             {
@@ -77,7 +84,6 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData
 
             NumTrackPaths = StreamUtil.ReadUInt32(stream);
 
-            trackPaths = new List<TrackPath>();
             for (int i = 0; i < NumTrackPaths; i++)
             {
                 var NewPath = new TrackPath();
@@ -114,7 +120,6 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData
             }
 
             NumU0 = StreamUtil.ReadUInt32(stream);
-            u0Structs = new List<U0Struct>();
 
             for (int i = 0; i < NumU0; i++)
             {
@@ -127,7 +132,6 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2.SSBData
             }
 
             NumU1 = StreamUtil.ReadUInt32(stream);
-            u1Structs = new List<U1Struct>();
 
             for (int i = 0; i < NumU1; i++)
             {

@@ -124,18 +124,75 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2
         //        }
         //    }
         //}
+        /// <summary>
+        /// Reads raw resources in SDB streaming chunk order without exporting files. The companion SDB
+        /// supplies chunk offsets and resource counts, so gaps and relocated chunks are supported.
+        /// Only one decompressed chunk is buffered at a time. Payload arrays belong to the caller.
+        /// </summary>
+        public static IEnumerable<SSBResource> ReadResources(string path)
+        {
+            var sdb = new SDBHandler();
+            sdb.LoadSBD(System.IO.Path.ChangeExtension(path, ".sdb"));
+            using var stream = File.OpenRead(path);
+            for (int i = 0; i < sdb.streamingChunkInfos.Count; i++)
+                foreach (var resource in ReadChunkResources(stream, sdb.streamingChunkInfos[i], i))
+                    yield return resource;
+        }
+
+        private static IEnumerable<SSBResource> ReadChunkResources(
+            Stream stream, SDBHandler.StreamingChunkInfo chunk, int chunkId)
+        {
+            long offset = (long)chunk.chunkOffset * SDBOffsetUnit;
+            if (offset < 0 || offset > stream.Length - HeaderSize)
+                throw new InvalidDataException($"SSB chunk {chunkId} has an invalid offset {offset}.");
+            stream.Position = offset;
+            using var data = new MemoryStream();
+            using var blocks = new BinaryReader(stream, System.Text.Encoding.ASCII, leaveOpen: true);
+            while (true)
+            {
+                if (stream.Length - stream.Position < HeaderSize)
+                    throw new InvalidDataException($"SSB chunk {chunkId} has no complete CEND block.");
+                string magic = System.Text.Encoding.ASCII.GetString(blocks.ReadBytes(4));
+                int size = blocks.ReadInt32();
+                bool end = magic.Equals("CEND", StringComparison.OrdinalIgnoreCase);
+                if (!end && !magic.Equals("CBXS", StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidDataException($"SSB chunk {chunkId} has an invalid block marker '{magic}'.");
+                if (size < HeaderSize || size - HeaderSize > stream.Length - stream.Position)
+                    throw new InvalidDataException($"SSB chunk {chunkId} has an invalid block size {size}.");
+                data.Write(Refpack.Decompress(blocks.ReadBytes(size - HeaderSize)));
+                if (end) break;
+            }
+
+            // unpackedSize counts only resource types 0-12; it is not the size of the whole chunk.
+            // Frame records with numResources instead, including AIP, scripts, sound banks, etc.
+            data.Position = 0;
+            using var records = new BinaryReader(data);
+            for (int i = 0; i < chunk.numResources; i++)
+            {
+                if (data.Length - data.Position < HeaderSize)
+                    throw new InvalidDataException($"SSB chunk {chunkId} is missing resource {i}.");
+                int type = records.ReadByte();
+                int size = records.ReadByte() | records.ReadByte() << 8 | records.ReadByte() << 16;
+                int track = records.ReadByte();
+                int rid = records.ReadByte() | records.ReadByte() << 8 | records.ReadByte() << 16;
+                if (size > data.Length - data.Position)
+                    throw new InvalidDataException($"SSB chunk {chunkId} resource {i} extends beyond its chunk.");
+                yield return new SSBResource(type, track, rid, chunkId, records.ReadBytes(size));
+            }
+        }
+
         public void LoadAndExtractSSBFromSBD(string path, string extractPath)
         {
             SDBHandler sdbHandler = new SDBHandler();
-            sdbHandler.LoadSBD(path.Replace(".ssb", ".sdb"));
+            sdbHandler.LoadSBD(System.IO.Path.ChangeExtension(path, ".sdb"));
 
             PHMHandler phmHandler = new PHMHandler();
-            phmHandler.LoadPHM(path.Replace(".ssb", ".phm"));
+            phmHandler.LoadPHM(System.IO.Path.ChangeExtension(path, ".phm"));
 
             PSMHandler psmHandler = new PSMHandler();
-            psmHandler.LoadPSM(path.Replace(".ssb", ".psm"));
+            psmHandler.LoadPSM(System.IO.Path.ChangeExtension(path, ".psm"));
 
-            using (Stream stream = File.Open(path, FileMode.Open))
+            using (Stream stream = File.OpenRead(path))
             {
                 PatchesJsonHandler patchesJsonHandler = new PatchesJsonHandler();
                 Bin0JsonHandler bin0JsonHandler = new Bin0JsonHandler();
@@ -146,9 +203,6 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2
                 VisCurtainJsonHandler visCurtainJsonHandler = new VisCurtainJsonHandler();
                 MDRJsonHandler mdrJsonHandler = new MDRJsonHandler();
 
-                MemoryStream memoryStream = new MemoryStream();
-                List<int> ints = new List<int>();
-                int splitCount = 1;
                 int FilePos = 0;
                 Directory.CreateDirectory(extractPath + "//Textures");
                 Directory.CreateDirectory(extractPath + "//Lightmaps");
@@ -168,43 +222,13 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2
                     for (int j = 0; j < StreamingChunkNum; j++)
                     {
                         var StreamingChunk = sdbHandler.streamingChunkInfos[StreamingChunkPos+j];
-                        stream.Position = StreamingChunk.chunkOffset * 256;
-
-                        while (true)
+                        foreach (var resource in ReadChunkResources(stream, StreamingChunk, StreamingChunkPos + j))
                         {
-                            string MagicWords = StreamUtil.ReadString(stream, 4);
-
-                            int Size = StreamUtil.ReadUInt32(stream);
-                            byte[] Data = new byte[Size - 8];
-                            byte[] DecompressedData = new byte[1];
-                            Data = StreamUtil.ReadBytes(stream, Size - 8);
-
-                            DecompressedData = Refpack.Decompress(Data);
-                            StreamUtil.WriteBytes(memoryStream, DecompressedData);
-                            if (MagicWords.ToUpper() == "CEND")
-                            {
-                                break;
-                            }
-                        }
-
-                        //CheckSize
-                        if(memoryStream.Length!= StreamingChunk.unpackedSize)
-                        {
-                            //throw new Exception("Size Missmatch");
-                        }
-
-                        memoryStream.Position = 0;
-                        for (int k = 0; k < StreamingChunk.numResources; k++)
-                        {
-                            MemoryStream memoryStream1 = new MemoryStream();
-                            int ID = StreamUtil.ReadUInt8(memoryStream);
-                            int ChunkSize = StreamUtil.ReadInt24(memoryStream);
-                            int TrackID = StreamUtil.ReadUInt8(memoryStream);
-                            int RID = StreamUtil.ReadInt24(memoryStream);
-
-                            byte[] NewData = StreamUtil.ReadBytes(memoryStream, ChunkSize);
-                            StreamUtil.WriteBytes(memoryStream1, NewData);
-                            memoryStream1.Position = 0;
+                            using var memoryStream1 = new MemoryStream(resource.Data, writable: false);
+                            int ID = resource.Type;
+                            int TrackID = resource.Track;
+                            int RID = resource.Rid;
+                            byte[] NewData = resource.Data;
                             string Path = RID + "-" + TrackID + "-" + FilePos;
 
                             if (ID == 0)
@@ -343,8 +367,6 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2
                                 Console.WriteLine(LevelExtractPath + "//Sounds//" + Path + ".bnk");
                                 var file = File.Create(LevelExtractPath + "//Sounds//" + Path + ".bnk");
                                 memoryStream1.CopyTo(file);
-                                memoryStream1.Dispose();
-                                memoryStream1 = new MemoryStream();
                                 file.Close();
                             }
                             else
@@ -352,14 +374,11 @@ namespace SSXLibrary.FileHandlers.LevelFiles.SSX3PS2
                                 Console.WriteLine(LevelExtractPath + Path + ".bin" + ID);
                                 var file = File.Create(LevelExtractPath + Path + ".bin" + ID);
                                 memoryStream1.CopyTo(file);
-                                memoryStream1.Dispose();
-                                memoryStream1 = new MemoryStream();
                                 file.Close();
                             }
 
                             FilePos++;
                         }
-                        memoryStream = new MemoryStream();
                     }
 
                     Console.WriteLine(extractPath + "//Levels//" + sdbHandler.locations[i].Name + "//Patches.json");

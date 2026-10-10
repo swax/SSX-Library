@@ -20,9 +20,13 @@ C#/.NET Library for Extracting, Creating, and Modifying files for SSX games.
 >   payload lengths, and consume alignment padding so the next effect is read
 >   from the correct offset. HUD types and JSON use upstream's grouped API;
 >   OpenSlope handles its portable HUD fields in its own effects adapter.
+> - **SSX 3 resource API:** `SSBHandler.ReadResources` streams raw resources using
+>   SDB chunk offsets and resource counts, with checks for malformed framing.
+>   The raw exporter shares this reader. Public `WorldAIP` exposes AI paths and
+>   start-grid records for OpenSlope's map conversion, including empty AI resources.
 >
-> Regression tests cover texture slots, HUD binary round trips and payload bounds.
-> Earlier audio, lightmap, format, and dependency changes
+> Regression tests cover texture slots, HUD binary round trips and payload bounds,
+> and SSB chunk framing. Earlier audio, lightmap, format, and dependency changes
 > from this fork are now included upstream. Particle instances use
 > `ParticleModelIndex` in C# and JSON.
 > Existing formatting and helper placement are retained to keep the merge diff focused.
