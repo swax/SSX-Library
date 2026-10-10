@@ -826,11 +826,15 @@ namespace SSX_Library.FileHandlers.LevelFiles.Tricky.PS2
                         $"SSF HUD-message node at 0x{NewEffect.Offset:X} declares {payload} payload bytes; " +
                         $"it must carry at least the {HudColourBytes}-byte colour.");
                 }
+                if (payload > stream.Length - stream.Position)
+                    throw new InvalidDataException("SSF HUD-message payload extends beyond the stream.");
                 var NewMainType = new HUDTextEffect();
 
                 NewMainType.HudRed = StreamUtil.ReadFloat(stream);
                 NewMainType.HudGreen = StreamUtil.ReadFloat(stream);
                 NewMainType.HudBlue = StreamUtil.ReadFloat(stream);
+                // The size includes padding and bounds the string. Never read into the next node
+                // looking for a terminator; consuming the padding also leaves it word aligned.
                 NewMainType.HudText = StreamUtil.ReadString16(stream, payload - HudColourBytes);
 
                 NewEffect.hudTextEffect = NewMainType;

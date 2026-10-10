@@ -16,13 +16,13 @@ C#/.NET Library for Extracting, Creating, and Modifying files for SSX games.
 > - **Tricky texture reuse:** `SeedImageFiles` preserves original texture slot
 >   ordering when rebuilding a level against an existing SSH. The PBD texture
 >   count matches that SSH, and the caller's seed list is kept intact.
-> - **SSF string reading:** bound HUD strings to their node payload and consume
->   alignment padding so the next effect is read from the correct offset.
->   HUD types and JSON use upstream's grouped API;
+> - **SSF string reading:** bound HUD strings to their node payload, validate
+>   payload lengths, and consume alignment padding so the next effect is read
+>   from the correct offset. HUD types and JSON use upstream's grouped API;
 >   OpenSlope handles its portable HUD fields in its own effects adapter.
 >
-> Regression tests cover texture slots and HUD binary round trips. Earlier
-> audio, lightmap, format, and dependency changes
+> Regression tests cover texture slots, HUD binary round trips and payload bounds.
+> Earlier audio, lightmap, format, and dependency changes
 > from this fork are now included upstream. Particle instances use
 > `ParticleModelIndex` in C# and JSON.
 > Existing formatting and helper placement are retained to keep the merge diff focused.

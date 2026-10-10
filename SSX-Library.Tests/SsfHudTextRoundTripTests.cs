@@ -192,4 +192,34 @@ public sealed class SsfHudTextRoundTripTests
 
         Assert.Throws<InvalidDataException>(() => new SSFHandler().LoadEffectsData(stream));
     }
+
+    [Fact]
+    public void HudTextWithoutATerminatorCannotConsumeTheNextNode()
+    {
+        using var stream = new MemoryStream();
+        using var writer = new BinaryWriter(stream, System.Text.Encoding.Unicode, leaveOpen: true);
+        writer.Write(12);
+        writer.Write(24); // header, three colour channels, and two unterminated UTF-16 characters
+        writer.Write(1f); writer.Write(1f); writer.Write(1f);
+        writer.Write(System.Text.Encoding.Unicode.GetBytes("ab"));
+        writer.Flush();
+        var handler = new SSFHandler();
+        handler.SaveEffectData(stream, Wait(2f));
+        stream.Position = 0;
+
+        Assert.Equal("ab", handler.LoadEffectsData(stream)!.Value.hudTextEffect!.Value.HudText);
+        Assert.Equal(24, stream.Position);
+        Assert.Equal(2f, handler.LoadEffectsData(stream)!.Value.WaitTime);
+    }
+
+    [Fact]
+    public void TruncatedHudPayloadIsRefused()
+    {
+        using var stream = new MemoryStream();
+        using var writer = new BinaryWriter(stream, System.Text.Encoding.Unicode, leaveOpen: true);
+        writer.Write(12); writer.Write(24); writer.Write(1f); writer.Write(1f); writer.Write(1f);
+        writer.Flush();
+        stream.Position = 0;
+        Assert.Throws<InvalidDataException>(() => new SSFHandler().LoadEffectsData(stream));
+    }
 }
