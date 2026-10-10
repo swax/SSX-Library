@@ -21,8 +21,8 @@ C#/.NET Library for Extracting, Creating, and Modifying files for SSX games.
 >   HUD types and JSON use upstream's grouped API;
 >   OpenSlope handles its portable HUD fields in its own effects adapter.
 >
-> Regression tests cover HUD binary round trips. Earlier audio, lightmap,
-> format, and dependency changes
+> Regression tests cover texture slots and HUD binary round trips. Earlier
+> audio, lightmap, format, and dependency changes
 > from this fork are now included upstream. Particle instances use
 > `ParticleModelIndex` in C# and JSON.
 > Existing formatting and helper placement are retained to keep the merge diff focused.
