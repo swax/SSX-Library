@@ -2416,13 +2416,6 @@ namespace SSX_Library.FileHandlers.LevelFiles.Tricky.PS2
         // Record +0x40: zero-based index into the PBD particle-model table.
         // Multiple particle instances may reference the same particle model.
         public int ParticleModelIndex;
-        // Source-compatibility alias for callers using the previous public field name.
-        [Obsolete("Use ParticleModelIndex instead.")]
-        public int UnknownInt1
-        {
-            readonly get => ParticleModelIndex;
-            set => ParticleModelIndex = value;
-        }
         public Vector3 LowestXYZ;
         public Vector3 HighestXYZ;
         public int UnknownInt8;

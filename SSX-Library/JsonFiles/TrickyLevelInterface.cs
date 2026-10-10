@@ -2939,5 +2939,67 @@ namespace SSXLibrary
 
 
         }
+
+        public void GenerateTemplate(string TemplatePath)
+        {
+            Directory.CreateDirectory(TemplatePath + "/Meshes");
+            Directory.CreateDirectory(TemplatePath + "/Textures");
+            Directory.CreateDirectory(TemplatePath + "/Skybox");
+            Directory.CreateDirectory(TemplatePath + "/Skybox/Textures");
+            Directory.CreateDirectory(TemplatePath + "/Skybox/Meshes");
+            Directory.CreateDirectory(TemplatePath + "/Lightmaps");
+            Directory.CreateDirectory(TemplatePath + "/Collision");
+
+            patchPoints = new PatchesJsonHandler();
+            instancesJson = new InstanceJsonHandler();
+            particleInstanceJson = new ParticleInstanceJsonHandler();
+            materialJson = new MaterialJsonHandler();
+            lightJsonHandler = new LightJsonHandler();
+            splineJsonHandler = new SplineJsonHandler();
+            prefabJsonHandler = new ModelJsonHandler();
+            particleModelJsonHandler = new ParticleModelJsonHandler();
+            cameraJSONHandler = new CameraJSONHandler();
+            ssfJsonHandler = new SSFJsonHandler();
+
+            //Skybox JSON
+            SkyMaterialJson = new MaterialJsonHandler();
+            SkyPrefabJsonHandler = new ModelJsonHandler();
+
+            patchPoints.CreateJson(TemplatePath + "/Patches.json", InlineExporting);
+            instancesJson.CreateJson(TemplatePath + "/Instances.json", InlineExporting);
+            particleInstanceJson.CreateJson(TemplatePath + "/ParticleInstances.json", InlineExporting);
+            materialJson.CreateJson(TemplatePath + "/Materials.json", InlineExporting);
+            lightJsonHandler.CreateJson(TemplatePath + "/Lights.json", InlineExporting);
+            splineJsonHandler.CreateJson(TemplatePath + "/Splines.json", InlineExporting);
+            prefabJsonHandler.CreateJson(TemplatePath + "/Models.json", InlineExporting);
+            particleModelJsonHandler.CreateJson(TemplatePath + "/ParticleModels.json", InlineExporting);
+            cameraJSONHandler.CreateJson(TemplatePath + "/Cameras.json", InlineExporting);
+            ssfJsonHandler.CreateJson(TemplatePath + "/SSFLogic.json", InlineExporting);
+
+            SkyMaterialJson.CreateJson(TemplatePath + "/Skybox/Materials.json", InlineExporting);
+            SkyPrefabJsonHandler.CreateJson(TemplatePath + "/Skybox/Models.json", InlineExporting);
+
+            AIPSOPJsonHandler aipJson = new AIPSOPJsonHandler();
+            aipJson.CreateJson(TemplatePath + "/AIP.json", InlineExporting);
+            aipJson.CreateJson(TemplatePath + "/SOP.json", InlineExporting);
+
+            SSXTrickyConfig trickyConfig = new SSXTrickyConfig();
+
+            trickyConfig.BuildUniLightmap = true;
+            trickyConfig.BuildPBDGenerate = true;
+            trickyConfig.BuildSSHGenerate = true;
+            trickyConfig.BuildLSSHGenerate = true;
+            trickyConfig.BuildLTGGenerate = true;
+            trickyConfig.BuildMAPGenerate = true;
+            trickyConfig.BuildSkyPBDGenerate = true;
+            trickyConfig.BuildSkySSHGenerate = true;
+            trickyConfig.BuildADLGenerate = true;
+            trickyConfig.BuildSSFGenerate = true;
+            trickyConfig.BuildAIPGenerate = true;
+            trickyConfig.BuildSOPGenerate = true;
+            trickyConfig.BuildLTGGenerateMode = 1;
+
+            trickyConfig.CreateJson(TemplatePath + "/ConfigTricky.ssx");
+        }
     }
 }

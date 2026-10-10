@@ -21,7 +21,7 @@ public sealed class SsfHudTextRoundTripTests
         new() { MainType = 4, WaitTime = seconds };
 
     static SSFHandler.Effect HudText(string text, float r = 1f, float g = 1f, float b = 1f) =>
-        new() { MainType = 12, HudText = text, HudRed = r, HudGreen = g, HudBlue = b };
+        new() { MainType = 12, hudTextEffect = new SSFHandler.HUDTextEffect { HudText = text, HudRed = r, HudGreen = g, HudBlue = b } };
 
     static SSFHandler.Effect Unknown(byte[] payload) =>
         new() { MainType = UnknownMainType, UnknownPayload = payload };
@@ -58,7 +58,7 @@ public sealed class SsfHudTextRoundTripTests
 
         Assert.Single(read);
         Assert.Equal(12, read[0].MainType);
-        Assert.Equal("flag-set-plain", read[0].HudText);
+        Assert.Equal("flag-set-plain", read[0].hudTextEffect!.Value.HudText);
     }
 
     [Theory]
@@ -76,7 +76,7 @@ public sealed class SsfHudTextRoundTripTests
 
         Assert.Equal(0, read[0].ByteSize % 4);
         Assert.True(read[0].ByteSize >= HeaderBytes);
-        Assert.Equal(text, read[0].HudText);
+        Assert.Equal(text, read[0].hudTextEffect!.Value.HudText);
     }
 
     [Fact]
@@ -84,10 +84,10 @@ public sealed class SsfHudTextRoundTripTests
     {
         var read = RoundTrip(HudText("boost-directional", 0.25f, 0.5f, 1f));
 
-        Assert.Equal(0.25f, read[0].HudRed);
-        Assert.Equal(0.5f, read[0].HudGreen);
-        Assert.Equal(1f, read[0].HudBlue);
-        Assert.Equal("boost-directional", read[0].HudText);
+        Assert.Equal(0.25f, read[0].hudTextEffect!.Value.HudRed);
+        Assert.Equal(0.5f, read[0].hudTextEffect!.Value.HudGreen);
+        Assert.Equal(1f, read[0].hudTextEffect!.Value.HudBlue);
+        Assert.Equal("boost-directional", read[0].hudTextEffect!.Value.HudText);
     }
 
     [Fact]
@@ -147,7 +147,7 @@ public sealed class SsfHudTextRoundTripTests
         Assert.Equal(3.0f, read[0].WaitTime);
         Assert.Equal(UnknownMainType, read[1].MainType);
         Assert.Equal(12, read[2].MainType);
-        Assert.Equal("after-the-unknown", read[2].HudText);
+        Assert.Equal("after-the-unknown", read[2].hudTextEffect!.Value.HudText);
         Assert.Equal(1.5f, read[3].WaitTime);
     }
 
@@ -158,7 +158,7 @@ public sealed class SsfHudTextRoundTripTests
 
         Assert.Equal(3, read.Count);
         Assert.Equal(3.0f, read[0].WaitTime);
-        Assert.Equal("cracked-tough", read[1].HudText);
+        Assert.Equal("cracked-tough", read[1].hudTextEffect!.Value.HudText);
         Assert.Equal(0.25f, read[2].WaitTime);
     }
 
