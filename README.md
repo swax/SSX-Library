@@ -24,9 +24,15 @@ C#/.NET Library for Extracting, Creating, and Modifying files for SSX games.
 >   SDB chunk offsets and resource counts, with checks for malformed framing.
 >   The raw exporter shares this reader. Public `WorldAIP` exposes AI paths and
 >   start-grid records for OpenSlope's map conversion, including empty AI resources.
+> - **SSX 3 JSON export fixes:** the instance float after `ModelID` is named
+>   `Scale`: a uniform scale applied before the matrix, which holds only rotation
+>   and position. Instance JSON `Scale` now carries it, replacing the raw `U5`
+>   field. Model objects without a matrix export an identity transform and
+>   `IncludeMatrix: false` instead of decomposing an all-zero matrix. AIP JSON
+>   keeps start-record `U4`/`U5`, and `AIPJsonHandler.Load` returns AIP data.
 >
 > Regression tests cover texture slots, HUD binary round trips and payload bounds,
-> and SSB chunk framing. Earlier audio, lightmap, format, and dependency changes
+> SSB chunk framing, and the SSX 3 instance, model and AIP JSON exports. Earlier audio, lightmap, format, and dependency changes
 > from this fork are now included upstream. Particle instances use
 > `ParticleModelIndex` in C# and JSON.
 > Existing formatting and helper placement are retained to keep the merge diff focused.
