@@ -1803,9 +1803,10 @@ namespace SSX_Library.FileHandlers.LevelFiles.Tricky.PS2
                         for (int bz = 0; bz < TempObject.objectData.MeshOffsets.Count; bz++)
                         {
                             var TempMeshOffset = TempObject.objectData.MeshOffsets[bz];
-                            if (File.Exists(FolderPath + "\\" + TempMeshOffset.MeshPath))
+                            string meshPath = Path.Combine(FolderPath, TempMeshOffset.MeshPath);
+                            if (File.Exists(meshPath))
                             {
-                                ModelObject modelObject = objTriPBDHandler.LoadFile(FolderPath + "\\" + TempMeshOffset.MeshPath);
+                                ModelObject modelObject = objTriPBDHandler.LoadFile(meshPath);
                                 TempMeshOffset.FullMesh = objTriPBDHandler.GenerateTristripDataOneNew(modelObject.Meshs[0]);
                             }
                             else

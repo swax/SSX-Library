@@ -128,6 +128,7 @@ internal static class COFB
         // Get the path for all the member files relative to the input folder.
         // And replace slashes.
         string[] absoluteFilePaths = Directory.GetFiles(folderPath, "*.*", SearchOption.AllDirectories);
+        Array.Sort(absoluteFilePaths, StringComparer.OrdinalIgnoreCase);
         string[] relativeFilePaths = [.. absoluteFilePaths.Select(path => Path.GetRelativePath(folderPath, path))];
 
         // Write File count

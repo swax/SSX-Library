@@ -1121,7 +1121,7 @@ namespace SSXLibrary
             {
                 Console.WriteLine("Textures: " + (i + 1) + "/" + TextureHandler.ShapeImages.Count);
                 TextureHandler.BrightenImage(i);
-                TextureHandler.ExtractSingleImage(ExportPath + "\\Textures\\" + TextureHandler.ShapeImages[i].Shortname + ".png", i);
+                TextureHandler.ExtractSingleImage(Path.Combine(ExportPath, "Textures", TextureHandler.ShapeImages[i].Shortname + ".png"), i);
             }
 
 
@@ -1275,7 +1275,7 @@ namespace SSXLibrary
                 {
                     Console.WriteLine("Skybox Textures: " + (i + 1) + "/" + SkyboxHandler.ShapeImages.Count);
                     SkyboxHandler.BrightenImage(i);
-                    SkyboxHandler.ExtractSingleImage(ExportPath + "\\Skybox\\Textures\\" + SkyboxHandler.ShapeImages[i].Shortname + ".png", i);
+                    SkyboxHandler.ExtractSingleImage(Path.Combine(ExportPath, "Skybox", "Textures", SkyboxHandler.ShapeImages[i].Shortname + ".png"), i);
                 }
             }
 
@@ -1287,7 +1287,7 @@ namespace SSXLibrary
                 {
                     Console.WriteLine("Lightmap Textures: " + (i + 1) + "/" + LightmapHandler.ShapeImages.Count);
                     LightmapHandler.BrightenImage(i);
-                    LightmapHandler.ExtractSingleImage(ExportPath + "\\Lightmaps\\" + LightmapHandler.ShapeImages[i].Shortname + ".png", i);
+                    LightmapHandler.ExtractSingleImage(Path.Combine(ExportPath, "Lightmaps", LightmapHandler.ShapeImages[i].Shortname + ".png"), i);
                 }
             }
             else
@@ -1297,7 +1297,7 @@ namespace SSXLibrary
                 {
                     Console.WriteLine("Lightmap Textures: " + (i+1) + "/" + LightmapHandler.ShapeImages.Count);
                     LightmapHandler.BrightenImage(i);
-                    LightmapHandler.ExtractSingleImage(ExportPath + "\\Lightmaps\\" + LightmapHandler.ShapeImages[i].Shortname + ".png", i);
+                    LightmapHandler.ExtractSingleImage(Path.Combine(ExportPath, "Lightmaps", LightmapHandler.ShapeImages[i].Shortname + ".png"), i);
                 }
             }
 
@@ -2266,7 +2266,7 @@ namespace SSXLibrary
             {
                 //ErrorManager.ErrorMessage = "Error with Importing Meshes";
                 Console.WriteLine("Importing Meshes");
-                pbdHandler.ImportMeshes(LoadPath + "\\Meshes");
+                pbdHandler.ImportMeshes(Path.Combine(LoadPath, "Meshes"));
                 //ErrorManager.ErrorMessage = "Error Generating PDB BBoxes";
                 Console.WriteLine("Generating PDB BBoxes");
                 pbdHandler.RegenerateLowestAndHighest();
